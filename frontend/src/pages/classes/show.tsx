@@ -1,11 +1,12 @@
 import { AdvancedImage } from "@cloudinary/react";
-import { useGetIdentity, useShow } from "@refinedev/core";
+import { useGetIdentity, useInvalidate, useShow } from "@refinedev/core";
 import { useTable } from "@refinedev/react-table";
 import { ColumnDef } from "@tanstack/react-table";
 import { useMemo } from "react";
 import { useParams } from "react-router";
 
 import { DataTable } from "@/components/refine-ui/data-table/data-table";
+import { DeleteButton } from "@/components/refine-ui/buttons/delete";
 import { ShowButton } from "@/components/refine-ui/buttons/show";
 import {
   ShowView,
@@ -45,6 +46,7 @@ const ClassesShow = () => {
     currentUser?.role === UserRole.ADMIN ||
     (currentUser?.role === UserRole.TEACHER &&
       classDetails?.teacherId === currentUser.id);
+  const invalidate = useInvalidate();
 
   const studentColumns = useMemo<ColumnDef<ClassUser>[]>(
     () => [
@@ -85,8 +87,40 @@ const ClassesShow = () => {
           </ShowButton>
         ),
       },
+      // Admins and this class's teacher can remove students from the roster
+      ...(canManage
+        ? [
+            {
+              id: "remove",
+              size: 120,
+              header: () => <p className="column-title">Roster</p>,
+              cell: ({ row }) => (
+                <DeleteButton
+                  resource={`classes/${classId}/students`}
+                  recordItemId={row.original.id}
+                  accessControl={{ enabled: false }}
+                  size="sm"
+                  confirmTitle={`Remove ${row.original.name} from this class?`}
+                  confirmOkText="Remove"
+                  successNotification={{
+                    message: `Removed ${row.original.name}`,
+                    type: "success",
+                  }}
+                  onSuccess={() =>
+                    invalidate({
+                      resource: `classes/${classId}/users`,
+                      invalidates: ["list"],
+                    })
+                  }
+                >
+                  Remove
+                </DeleteButton>
+              ),
+            } satisfies ColumnDef<ClassUser>,
+          ]
+        : []),
     ],
-    []
+    [canManage, classId, invalidate]
   );
 
   const studentsTable = useTable<ClassUser>({

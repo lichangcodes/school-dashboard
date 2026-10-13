@@ -6,7 +6,11 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { type BaseKey, useDeleteButton } from "@refinedev/core";
+import {
+  type BaseKey,
+  type SuccessErrorNotification,
+  useDeleteButton,
+} from "@refinedev/core";
 import { Loader2, Trash } from "lucide-react";
 import React from "react";
 
@@ -37,12 +41,36 @@ type DeleteButtonProps = {
    * Called after the record is deleted, e.g. to leave a show page
    */
   onSuccess?: () => void;
+  /**
+   * Overrides the default "Successfully deleted <resource>" toast
+   */
+  successNotification?: SuccessErrorNotification["successNotification"];
+  /**
+   * Overrides the confirmation popover's question and confirm button text
+   */
+  confirmTitle?: string;
+  confirmOkText?: string;
 } & React.ComponentProps<typeof Button>;
 
 export const DeleteButton = React.forwardRef<
   React.ComponentRef<typeof Button>,
   DeleteButtonProps
->(({ resource, recordItemId, accessControl, meta, onSuccess, children, ...rest }, ref) => {
+>(
+  (
+    {
+      resource,
+      recordItemId,
+      accessControl,
+      meta,
+      onSuccess,
+      successNotification,
+      confirmTitle: confirmTitleFromProps,
+      confirmOkText: confirmOkTextFromProps,
+      children,
+      ...rest
+    },
+    ref
+  ) => {
   const {
     hidden,
     disabled,
@@ -58,6 +86,7 @@ export const DeleteButton = React.forwardRef<
     accessControl,
     meta,
     onSuccess,
+    successNotification,
   });
   const [open, setOpen] = React.useState(false);
 
@@ -67,8 +96,8 @@ export const DeleteButton = React.forwardRef<
   if (isHidden) return null;
 
   const confirmCancelText = defaultCancelLabel;
-  const confirmOkText = defaultConfirmOkLabel;
-  const confirmTitle = defaultConfirmTitle;
+  const confirmOkText = confirmOkTextFromProps ?? defaultConfirmOkLabel;
+  const confirmTitle = confirmTitleFromProps ?? defaultConfirmTitle;
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -115,6 +144,7 @@ export const DeleteButton = React.forwardRef<
       </PopoverContent>
     </Popover>
   );
-});
+  }
+);
 
 DeleteButton.displayName = "DeleteButton";
