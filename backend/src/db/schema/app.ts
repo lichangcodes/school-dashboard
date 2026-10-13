@@ -55,7 +55,7 @@ export const classes = pgTable(
 
     subjectId: integer("subject_id")
       .notNull()
-      .references(() => subjects.id, { onDelete: "cascade" }),
+      .references(() => subjects.id, { onDelete: "restrict" }),
     teacherId: text("teacher_id")
       .notNull()
       .references(() => user.id, { onDelete: "restrict" }),
