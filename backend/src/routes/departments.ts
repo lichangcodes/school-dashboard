@@ -10,6 +10,16 @@ import {
   subjects,
   user,
 } from "../db/schema/index.js";
+import {
+  getPgErrorCode,
+  PG_FOREIGN_KEY_VIOLATION,
+  PG_UNIQUE_VIOLATION,
+} from "../lib/db-errors.js";
+import {
+  departmentCreateSchema,
+  departmentUpdateSchema,
+  formatZodError,
+} from "../lib/validation.js";
 
 const router = express.Router();
 
@@ -73,17 +83,23 @@ router.get("/", async (req, res) => {
 
 router.post("/", requireRole("admin"), async (req, res) => {
   try {
-    const { code, name, description } = req.body;
+    const parsed = departmentCreateSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ error: formatZodError(parsed.error) });
+    }
 
     const [createdDepartment] = await db
       .insert(departments)
-      .values({ code, name, description })
+      .values(parsed.data)
       .returning({ id: departments.id });
 
     if (!createdDepartment) throw Error;
 
     res.status(201).json({ data: createdDepartment });
   } catch (error) {
+    if (getPgErrorCode(error) === PG_UNIQUE_VIOLATION) {
+      return res.status(409).json({ error: "Department code already exists" });
+    }
     console.error("POST /departments error:", error);
     res.status(500).json({ error: "Failed to create department" });
   }
@@ -145,6 +161,74 @@ router.get("/:id", async (req, res) => {
   } catch (error) {
     console.error("GET /departments/:id error:", error);
     res.status(500).json({ error: "Failed to fetch department details" });
+  }
+});
+
+router.patch("/:id", requireRole("admin"), async (req, res) => {
+  try {
+    const departmentId = Number(req.params.id);
+
+    if (!Number.isFinite(departmentId)) {
+      return res.status(400).json({ error: "Invalid department id" });
+    }
+
+    const parsed = departmentUpdateSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ error: formatZodError(parsed.error) });
+    }
+
+    const [updatedDepartment] = await db
+      .update(departments)
+      .set(parsed.data)
+      .where(eq(departments.id, departmentId))
+      .returning();
+
+    if (!updatedDepartment) {
+      return res.status(404).json({ error: "Department not found" });
+    }
+
+    res.status(200).json({ data: updatedDepartment });
+  } catch (error) {
+    if (getPgErrorCode(error) === PG_UNIQUE_VIOLATION) {
+      return res.status(409).json({ error: "Department code already exists" });
+    }
+    console.error("PATCH /departments/:id error:", error);
+    res.status(500).json({ error: "Failed to update department" });
+  }
+});
+
+router.delete("/:id", requireRole("admin"), async (req, res) => {
+  try {
+    const departmentId = Number(req.params.id);
+
+    if (!Number.isFinite(departmentId)) {
+      return res.status(400).json({ error: "Invalid department id" });
+    }
+
+    // The subjects FK is ON DELETE RESTRICT, so Postgres rejects this while subjects remain.
+    const [deletedDepartment] = await db
+      .delete(departments)
+      .where(eq(departments.id, departmentId))
+      .returning({ id: departments.id });
+
+    if (!deletedDepartment) {
+      return res.status(404).json({ error: "Department not found" });
+    }
+
+    res.status(200).json({ data: deletedDepartment });
+  } catch (error) {
+    if (getPgErrorCode(error) === PG_FOREIGN_KEY_VIOLATION) {
+      // Only runs on the failure path, so a slightly stale count is harmless.
+      const [result] = await db
+        .select({ count: sql<number>`count(*)::int` })
+        .from(subjects)
+        .where(eq(subjects.departmentId, Number(req.params.id)));
+      return res.status(409).json({
+        error: `This department still has ${result?.count ?? "some"} subject(s). Delete or move them first.`,
+      });
+    }
+    console.error("DELETE /departments/:id error:", error);
+    res.status(500).json({ error: "Failed to delete department" });
   }
 });
 

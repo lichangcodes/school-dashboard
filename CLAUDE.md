@@ -36,6 +36,9 @@ Env: copy `.env.example` → `.env` in each folder. The frontend's `VITE_BACKEND
 
 ### Backend conventions
 - Routes are hand-written Drizzle queries in `src/routes/*.ts`, one router per resource. List endpoints take `search`, `page`, `limit` (plus resource-specific filters) and return `{ data, pagination: { page, limit, total, totalPages } }`. Single items return `{ data }`. Errors return `{ error }`.
+- Request bodies for writes are parsed with zod schemas in `src/lib/validation.ts` (unknown keys are stripped, so they act as a field whitelist). Invalid input returns 400.
+- Postgres constraint errors map to HTTP via `src/lib/db-errors.ts`. Drizzle wraps driver errors, so the code is on `error.cause.code`. A unique violation (23505) returns 409. A foreign key violation (23503) returns 409 on delete (children still exist) and 400 on create/update (referenced row missing).
+- Foreign keys in the department → subject → class chain are `ON DELETE RESTRICT`, so a delete fails while children exist. Enrollments still cascade from classes and users.
 - Imports use `.js` extensions (ESM, `"type": "module"`).
 - DB driver is `drizzle-orm/neon-http` (`src/db/index.ts`). The HTTP driver **does not support interactive transactions** (`db.transaction`). Use a different driver (e.g. `neon-serverless` Pool / `node-postgres`) for anything that needs `SELECT ... FOR UPDATE` or multi-statement atomicity.
 - Schema: `src/db/schema/auth.ts` holds the Better Auth tables (`user` with a `role` pg enum) and `app.ts` holds departments → subjects → classes → enrollments. `classes.schedules` is jsonb. Despite its name, `enrollments_student_class_unique` is a plain `index`, not a unique constraint.

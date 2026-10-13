@@ -23,7 +23,7 @@ const PORT = 8000;
 app.use(
   cors({
     origin: process.env.FRONTEND_URL, // React app URL
-    methods: ["GET", "POST", "PUT", "DELETE"], // Specify allowed HTTP methods
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"], // Specify allowed HTTP methods
     credentials: true, // allow cookies
   })
 );

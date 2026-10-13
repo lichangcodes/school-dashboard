@@ -4,6 +4,16 @@ import { eq, ilike, or, and, desc, sql, getTableColumns } from "drizzle-orm";
 import { db } from "../db/index.js";
 import { requireRole } from "../middleware/auth.js";
 import { classes, departments, enrollments, subjects, user } from "../db/schema/index.js";
+import {
+  getPgErrorCode,
+  PG_FOREIGN_KEY_VIOLATION,
+  PG_UNIQUE_VIOLATION,
+} from "../lib/db-errors.js";
+import {
+  formatZodError,
+  subjectCreateSchema,
+  subjectUpdateSchema,
+} from "../lib/validation.js";
 
 const router = express.Router();
 
@@ -75,17 +85,27 @@ router.get("/", async (req, res) => {
 
 router.post("/", requireRole("admin"), async (req, res) => {
   try {
-    const { departmentId, name, code, description } = req.body;
+    const parsed = subjectCreateSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ error: formatZodError(parsed.error) });
+    }
 
     const [createdSubject] = await db
       .insert(subjects)
-      .values({ departmentId, name, code, description })
+      .values(parsed.data)
       .returning({ id: subjects.id });
 
     if (!createdSubject) throw Error;
 
     res.status(201).json({ data: createdSubject });
   } catch (error) {
+    const code = getPgErrorCode(error);
+    if (code === PG_UNIQUE_VIOLATION) {
+      return res.status(409).json({ error: "Subject code already exists" });
+    }
+    if (code === PG_FOREIGN_KEY_VIOLATION) {
+      return res.status(400).json({ error: "Department does not exist" });
+    }
     console.error("POST /subjects error:", error);
     res.status(500).json({ error: "Failed to create subject" });
   }
@@ -131,6 +151,78 @@ router.get("/:id", async (req, res) => {
   } catch (error) {
     console.error("GET /subjects/:id error:", error);
     res.status(500).json({ error: "Failed to fetch subject details" });
+  }
+});
+
+router.patch("/:id", requireRole("admin"), async (req, res) => {
+  try {
+    const subjectId = Number(req.params.id);
+
+    if (!Number.isFinite(subjectId)) {
+      return res.status(400).json({ error: "Invalid subject id" });
+    }
+
+    const parsed = subjectUpdateSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ error: formatZodError(parsed.error) });
+    }
+
+    const [updatedSubject] = await db
+      .update(subjects)
+      .set(parsed.data)
+      .where(eq(subjects.id, subjectId))
+      .returning();
+
+    if (!updatedSubject) {
+      return res.status(404).json({ error: "Subject not found" });
+    }
+
+    res.status(200).json({ data: updatedSubject });
+  } catch (error) {
+    const code = getPgErrorCode(error);
+    if (code === PG_UNIQUE_VIOLATION) {
+      return res.status(409).json({ error: "Subject code already exists" });
+    }
+    if (code === PG_FOREIGN_KEY_VIOLATION) {
+      return res.status(400).json({ error: "Department does not exist" });
+    }
+    console.error("PATCH /subjects/:id error:", error);
+    res.status(500).json({ error: "Failed to update subject" });
+  }
+});
+
+router.delete("/:id", requireRole("admin"), async (req, res) => {
+  try {
+    const subjectId = Number(req.params.id);
+
+    if (!Number.isFinite(subjectId)) {
+      return res.status(400).json({ error: "Invalid subject id" });
+    }
+
+    // The classes FK is ON DELETE RESTRICT, so Postgres rejects this while classes remain.
+    const [deletedSubject] = await db
+      .delete(subjects)
+      .where(eq(subjects.id, subjectId))
+      .returning({ id: subjects.id });
+
+    if (!deletedSubject) {
+      return res.status(404).json({ error: "Subject not found" });
+    }
+
+    res.status(200).json({ data: deletedSubject });
+  } catch (error) {
+    if (getPgErrorCode(error) === PG_FOREIGN_KEY_VIOLATION) {
+      // Only runs on the failure path, so a slightly stale count is harmless.
+      const [result] = await db
+        .select({ count: sql<number>`count(*)::int` })
+        .from(classes)
+        .where(eq(classes.subjectId, Number(req.params.id)));
+      return res.status(409).json({
+        error: `This subject still has ${result?.count ?? "some"} class(es). Move or delete them first.`,
+      });
+    }
+    console.error("DELETE /subjects/:id error:", error);
+    res.status(500).json({ error: "Failed to delete subject" });
   }
 });
 

@@ -1,0 +1,36 @@
+import { z } from "zod";
+
+// Unknown keys are stripped, so only these fields can ever reach the database.
+export const departmentCreateSchema = z.object({
+  code: z.string().trim().min(1).max(50),
+  name: z.string().trim().min(1).max(255),
+  description: z.string().trim().nullish(),
+});
+
+export const departmentUpdateSchema = departmentCreateSchema
+  .partial()
+  .refine((data) => Object.keys(data).length > 0, {
+    message: "No fields to update",
+  });
+
+export const subjectCreateSchema = z.object({
+  departmentId: z.coerce.number().int().positive(),
+  code: z.string().trim().min(1).max(50),
+  name: z.string().trim().min(1).max(255),
+  description: z.string().trim().nullish(),
+});
+
+export const subjectUpdateSchema = subjectCreateSchema
+  .partial()
+  .refine((data) => Object.keys(data).length > 0, {
+    message: "No fields to update",
+  });
+
+// First issue only; enough for a form toast.
+export const formatZodError = (error: z.ZodError) => {
+  const issue = error.issues[0];
+  if (!issue) return "Invalid request body";
+  return issue.path.length > 0
+    ? `${issue.path.join(".")}: ${issue.message}`
+    : issue.message;
+};
