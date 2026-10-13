@@ -95,12 +95,15 @@ export type Department = {
   description: string;
 };
 
+export type ClassStatus = "active" | "inactive" | "archived";
+
 export type ClassDetails = {
   id: number;
   name: string;
   description: string;
-  status: "active" | "inactive";
+  status: ClassStatus;
   capacity: number;
+  teacherId: string;
   courseCode: string;
   courseName: string;
   bannerUrl?: string;

@@ -2,11 +2,12 @@ import { ColumnDef } from "@tanstack/react-table";
 
 import { Badge } from "@/components/ui/badge";
 import { ShowButton } from "@/components/refine-ui/buttons/show";
+import type { ClassStatus } from "@/types";
 
 export type ClassListItem = {
   id: number;
   name: string;
-  status: "active" | "inactive";
+  status: ClassStatus;
   bannerUrl?: string;
   subject?: {
     name: string;
@@ -56,8 +57,13 @@ export const classColumns: ColumnDef<ClassListItem>[] = [
     size: 140,
     header: () => <p className="column-title">Status</p>,
     cell: ({ getValue }) => {
-      const status = getValue<"active" | "inactive">();
-      const variant = status === "active" ? "default" : "secondary";
+      const status = getValue<ClassStatus>();
+      const variant =
+        status === "active"
+          ? "default"
+          : status === "archived"
+          ? "outline"
+          : "secondary";
 
       return <Badge variant={variant}>{status}</Badge>;
     },

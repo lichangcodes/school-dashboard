@@ -64,16 +64,17 @@ export const classSchema = z.object({
       invalid_type_error: "Capacity is required",
     })
     .min(1, "Capacity must be at least 1"),
-  status: z.enum(["active", "inactive"]),
+  status: z.enum(["active", "inactive", "archived"]),
   bannerUrl: z
     .string({ required_error: "Class banner is required" })
     .min(1, "Class banner is required"),
-  bannerCldPubId: z
-    .string({ required_error: "Banner reference is required" })
-    .min(1, "Banner reference is required"),
+  // Only Cloudinary uploads have a public id; seeded banners are plain URLs
+  bannerCldPubId: z.string().optional(),
   inviteCode: z.string().optional(),
   schedules: z.array(scheduleSchema).optional(),
 });
+
+export type ClassFormValues = z.infer<typeof classSchema>;
 
 export const enrollmentSchema = z.object({
   classId: z.coerce

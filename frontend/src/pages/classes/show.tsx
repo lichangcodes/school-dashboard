@@ -1,5 +1,5 @@
 import { AdvancedImage } from "@cloudinary/react";
-import { useShow } from "@refinedev/core";
+import { useGetIdentity, useShow } from "@refinedev/core";
 import { useTable } from "@refinedev/react-table";
 import { ColumnDef } from "@tanstack/react-table";
 import { useMemo } from "react";
@@ -17,7 +17,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { bannerPhoto } from "@/lib/cloudinary";
-import { ClassDetails } from "@/types";
+import { ClassDetails, User, UserRole } from "@/types";
+
+import { ArchiveButton } from "./archive-button";
 
 type ClassUser = {
   id: string;
@@ -36,6 +38,13 @@ const ClassesShow = () => {
   });
 
   const classDetails = query.data?.data;
+
+  // Record-level rule the access control provider can't see: teachers manage only their own classes
+  const { data: currentUser } = useGetIdentity<User>();
+  const canManage =
+    currentUser?.role === UserRole.ADMIN ||
+    (currentUser?.role === UserRole.TEACHER &&
+      classDetails?.teacherId === currentUser.id);
 
   const studentColumns = useMemo<ColumnDef<ClassUser>[]>(
     () => [
@@ -103,7 +112,11 @@ const ClassesShow = () => {
   if (query.isLoading || query.isError || !classDetails) {
     return (
       <ShowView className="class-view class-show">
-        <ShowViewHeader resource="classes" title="Class Details" />
+        <ShowViewHeader
+          resource="classes"
+          title="Class Details"
+          canEdit={false}
+        />
         <p className="state-message">
           {query.isLoading
             ? "Loading class details..."
@@ -129,7 +142,19 @@ const ClassesShow = () => {
 
   return (
     <ShowView className="class-view class-show space-y-6">
-      <ShowViewHeader resource="classes" title="Class Details" />
+      <ShowViewHeader
+        resource="classes"
+        title="Class Details"
+        canEdit={canManage}
+        actionsSlot={
+          canManage && (
+            <ArchiveButton
+              classId={classDetails.id}
+              status={classDetails.status}
+            />
+          )
+        }
+      />
 
       <div className="banner">
         {classDetails.bannerUrl ? (

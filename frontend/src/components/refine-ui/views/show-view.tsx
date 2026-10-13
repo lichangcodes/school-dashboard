@@ -1,6 +1,6 @@
 "use client";
 
-import type { PropsWithChildren } from "react";
+import type { PropsWithChildren, ReactNode } from "react";
 
 import { RefreshButton } from "@/components/refine-ui/buttons/refresh";
 import { Breadcrumb } from "@/components/refine-ui/layout/breadcrumb";
@@ -32,6 +32,10 @@ type ShowViewHeaderProps = PropsWithChildren<{
   title?: string;
   wrapperClassName?: string;
   headerClassName?: string;
+  // Narrows access control for record-level rules (e.g. a teacher's own class)
+  canEdit?: boolean;
+  // Extra buttons rendered before Edit/Delete
+  actionsSlot?: ReactNode;
 }>;
 
 export const ShowViewHeader = ({
@@ -39,6 +43,8 @@ export const ShowViewHeader = ({
   title: titleFromProps,
   wrapperClassName,
   headerClassName,
+  canEdit = true,
+  actionsSlot,
 }: ShowViewHeaderProps) => {
   const back = useBack();
   const go = useGo();
@@ -90,7 +96,8 @@ export const ShowViewHeader = ({
             recordItemId={recordItemId}
             resource={resourceName}
           />
-          {resource?.edit && (
+          {actionsSlot}
+          {resource?.edit && canEdit && (
             <EditButton
               variant="outline"
               recordItemId={recordItemId}

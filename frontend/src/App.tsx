@@ -32,6 +32,7 @@ import { dataProvider } from "./providers/data";
 import ClassesList from "./pages/classes/list";
 import ClassesCreate from "./pages/classes/create";
 import ClassesShow from "./pages/classes/show";
+import ClassesEdit from "./pages/classes/edit";
 import MyClasses from "./pages/classes/mine";
 import { authProvider } from "./providers/auth";
 import { accessControlProvider } from "./providers/access-control";
@@ -128,9 +129,11 @@ function App() {
                   list: "/classes",
                   create: "/classes/create",
                   show: "/classes/show/:id",
+                  edit: "/classes/edit/:id",
                   meta: {
                     label: "Classes",
                     icon: <GraduationCap />,
+                    canDelete: true,
                   },
                 },
               ]}
@@ -189,6 +192,7 @@ function App() {
                     <Route index element={<ClassesList />} />
                     <Route path="create" element={<ClassesCreate />} />
                     <Route path="show/:id" element={<ClassesShow />} />
+                    <Route path="edit/:id" element={<ClassesEdit />} />
                   </Route>
                 </Route>
               </Routes>

@@ -1,5 +1,5 @@
 import express from "express";
-import { and, desc, eq, getTableColumns, ilike, or, sql } from "drizzle-orm";
+import { and, desc, eq, getTableColumns, ilike, ne, or, sql } from "drizzle-orm";
 
 import { db } from "../db/index.js";
 import { requireRole } from "../middleware/auth.js";
@@ -13,10 +13,11 @@ import {
 
 const router = express.Router();
 
-// Get all classes with optional search, subject, teacher filters, and pagination
+// Get all classes with optional search, subject, teacher, status filters, and pagination.
+// Archived classes are hidden unless status=archived or status=all.
 router.get("/", async (req, res) => {
   try {
-    const { search, subject, teacher, page = 1, limit = 10 } = req.query;
+    const { search, subject, teacher, status, page = 1, limit = 10 } = req.query;
 
     const currentPage = Math.max(1, +page);
     const limitPerPage = Math.max(1, +limit);
@@ -39,6 +40,12 @@ router.get("/", async (req, res) => {
 
     if (teacher) {
       filterConditions.push(ilike(user.name, `%${teacher}%`));
+    }
+
+    if (status === "active" || status === "inactive" || status === "archived") {
+      filterConditions.push(eq(classes.status, status));
+    } else if (status !== "all") {
+      filterConditions.push(ne(classes.status, "archived"));
     }
 
     const whereClause =

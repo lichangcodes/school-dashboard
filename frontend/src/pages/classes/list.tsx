@@ -23,6 +23,8 @@ const ClassesList = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSubject, setSelectedSubject] = useState<string>("all");
   const [selectedTeacher, setSelectedTeacher] = useState<string>("all");
+  // "current" sends no status, so the API's default (hide archived) applies
+  const [selectedStatus, setSelectedStatus] = useState<string>("current");
 
   const { query: subjectsQuery } = useList<Subject>({
     resource: "subjects",
@@ -70,6 +72,17 @@ const ClassesList = () => {
           },
         ];
 
+  const statusFilters =
+    selectedStatus === "current"
+      ? []
+      : [
+          {
+            field: "status",
+            operator: "eq" as const,
+            value: selectedStatus,
+          },
+        ];
+
   const searchFilters = searchQuery
     ? [
         {
@@ -90,7 +103,12 @@ const ClassesList = () => {
       },
       filters: {
         // Compose refine filters from the current UI selections.
-        permanent: [...subjectFilters, ...teacherFilters, ...searchFilters],
+        permanent: [
+          ...subjectFilters,
+          ...teacherFilters,
+          ...statusFilters,
+          ...searchFilters,
+        ],
       },
       sorters: {
         initial: [
@@ -151,6 +169,18 @@ const ClassesList = () => {
                     {teacher.name}
                   </SelectItem>
                 ))}
+              </SelectContent>
+            </Select>
+
+            <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+              <SelectTrigger>
+                <SelectValue placeholder="Filter by status" />
+              </SelectTrigger>
+
+              <SelectContent>
+                <SelectItem value="current">Current</SelectItem>
+                <SelectItem value="archived">Archived</SelectItem>
+                <SelectItem value="all">All Statuses</SelectItem>
               </SelectContent>
             </Select>
 

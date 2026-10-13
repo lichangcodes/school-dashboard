@@ -52,6 +52,10 @@ router.post("/", requireRole("student"), async (req, res) => {
 
     if (!classRecord) return res.status(404).json({ error: "Class not found" });
 
+    if (classRecord.status === "archived") {
+      return res.status(409).json({ error: "This class is archived" });
+    }
+
     const [student] = await db
       .select()
       .from(user)
@@ -107,6 +111,10 @@ router.post("/join", requireRole("student"), async (req, res) => {
       .where(eq(classes.inviteCode, inviteCode));
 
     if (!classRecord) return res.status(404).json({ error: "Class not found" });
+
+    if (classRecord.status === "archived") {
+      return res.status(409).json({ error: "This class is archived" });
+    }
 
     const [student] = await db
       .select()

@@ -17,6 +17,8 @@ const RULES: Record<string, Partial<Record<string, UserRole[]>>> = {
   },
   classes: {
     create: [UserRole.ADMIN, UserRole.TEACHER],
+    // Teachers may only edit their own classes; the show page checks ownership
+    edit: [UserRole.ADMIN, UserRole.TEACHER],
     delete: [UserRole.ADMIN],
   },
   "my-classes": { list: [UserRole.TEACHER, UserRole.STUDENT] },
