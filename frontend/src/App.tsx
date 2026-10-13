@@ -25,6 +25,7 @@ import SubjectsList from "./pages/subjects/list";
 import { Layout } from "./components/refine-ui/layout/layout";
 import SubjectsCreate from "./pages/subjects/create";
 import SubjectsShow from "./pages/subjects/show";
+import SubjectsEdit from "./pages/subjects/edit";
 import Dashboard from "./pages/dashboard";
 
 import { dataProvider } from "./providers/data";
@@ -39,6 +40,7 @@ import { Register } from "./pages/register";
 import DepartmentsList from "./pages/departments/list";
 import DepartmentsCreate from "./pages/departments/create";
 import DepartmentShow from "./pages/departments/show";
+import DepartmentsEdit from "./pages/departments/edit";
 import FacultyList from "./pages/faculty/list";
 import FacultyShow from "./pages/faculty/show";
 import EnrollmentsCreate from "./pages/enrollments/create";
@@ -84,9 +86,11 @@ function App() {
                   list: "/subjects",
                   create: "/subjects/create",
                   show: "/subjects/show/:id",
+                  edit: "/subjects/edit/:id",
                   meta: {
                     label: "Subjects",
                     icon: <BookOpen />,
+                    canDelete: true,
                   },
                 },
                 {
@@ -94,9 +98,11 @@ function App() {
                   list: "/departments",
                   show: "/departments/show/:id",
                   create: "/departments/create",
+                  edit: "/departments/edit/:id",
                   meta: {
                     label: "Departments",
                     icon: <Building2 />,
+                    canDelete: true,
                   },
                 },
                 {
@@ -156,12 +162,14 @@ function App() {
                     <Route index element={<SubjectsList />} />
                     <Route path="create" element={<SubjectsCreate />} />
                     <Route path="show/:id" element={<SubjectsShow />} />
+                    <Route path="edit/:id" element={<SubjectsEdit />} />
                   </Route>
 
                   <Route path="departments">
                     <Route index element={<DepartmentsList />} />
                     <Route path="create" element={<DepartmentsCreate />} />
                     <Route path="show/:id" element={<DepartmentShow />} />
+                    <Route path="edit/:id" element={<DepartmentsEdit />} />
                   </Route>
 
                   <Route path="faculty">

@@ -5,9 +5,20 @@ import { User, UserRole } from "@/types";
 // Mirrors the backend requireRole checks. The backend is the real enforcement;
 // this only hides UI the current user can't use.
 const RULES: Record<string, Partial<Record<string, UserRole[]>>> = {
-  departments: { create: [UserRole.ADMIN] },
-  subjects: { create: [UserRole.ADMIN] },
-  classes: { create: [UserRole.ADMIN, UserRole.TEACHER] },
+  departments: {
+    create: [UserRole.ADMIN],
+    edit: [UserRole.ADMIN],
+    delete: [UserRole.ADMIN],
+  },
+  subjects: {
+    create: [UserRole.ADMIN],
+    edit: [UserRole.ADMIN],
+    delete: [UserRole.ADMIN],
+  },
+  classes: {
+    create: [UserRole.ADMIN, UserRole.TEACHER],
+    delete: [UserRole.ADMIN],
+  },
   "my-classes": { list: [UserRole.TEACHER, UserRole.STUDENT] },
   enrollments: {
     list: [UserRole.STUDENT],

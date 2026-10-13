@@ -9,10 +9,12 @@ import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import {
   useBack,
+  useGo,
   useResourceParams,
   useUserFriendlyName,
 } from "@refinedev/core";
 import { ArrowLeftIcon } from "lucide-react";
+import { DeleteButton } from "../buttons/delete";
 import { EditButton } from "../buttons/edit";
 
 type ShowViewProps = PropsWithChildren<{
@@ -39,6 +41,7 @@ export const ShowViewHeader = ({
   headerClassName,
 }: ShowViewHeaderProps) => {
   const back = useBack();
+  const go = useGo();
 
   const getUserFriendlyName = useUserFriendlyName();
 
@@ -87,11 +90,22 @@ export const ShowViewHeader = ({
             recordItemId={recordItemId}
             resource={resourceName}
           />
-          <EditButton
-            variant="outline"
-            recordItemId={recordItemId}
-            resource={resourceName}
-          />
+          {resource?.edit && (
+            <EditButton
+              variant="outline"
+              recordItemId={recordItemId}
+              resource={resourceName}
+            />
+          )}
+          {resource?.meta?.canDelete && resourceName && (
+            <DeleteButton
+              recordItemId={recordItemId}
+              resource={resourceName}
+              onSuccess={() =>
+                go({ to: { resource: resourceName, action: "list" } })
+              }
+            />
+          )}
         </div>
       </div>
     </div>

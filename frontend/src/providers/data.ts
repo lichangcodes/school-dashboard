@@ -82,6 +82,27 @@ const options: CreateDataProviderOptions = {
       return json.data ?? {};
     },
   },
+
+  // PATCH by default
+  update: {
+    getEndpoint: ({ resource, id }) => `${resource}/${id}`,
+
+    buildBodyParams: async ({ variables }) => variables,
+
+    mapResponse: async (response) => {
+      const json: GetOneResponse = await response.json();
+      return json.data ?? {};
+    },
+  },
+
+  deleteOne: {
+    getEndpoint: ({ resource, id }) => `${resource}/${id}`,
+
+    mapResponse: async (response) => {
+      const json: GetOneResponse = await response.json();
+      return json.data ?? {};
+    },
+  },
 };
 
 const { dataProvider } = createDataProvider(BACKEND_BASE_URL, options, {
@@ -89,9 +110,12 @@ const { dataProvider } = createDataProvider(BACKEND_BASE_URL, options, {
   credentials: "include",
   hooks: {
     afterResponse: [
-      // getList/getOne don't check response.ok, so surface auth errors here for authProvider.onError
+      // getList/getOne/deleteOne don't check response.ok (deleteOne would report a 409 as
+      // success), and create/update put the raw JSON body in the message. Turn every
+      // non-2xx into an HttpError with the backend's { error } text; a 401 then reaches
+      // authProvider.onError, which logs out.
       async (_request, _options, response) => {
-        if (response.status === 401 || response.status === 403) {
+        if (!response.ok) {
           const body = await response.clone().json().catch(() => ({}));
           const error: HttpError = {
             message: body.error ?? response.statusText,
