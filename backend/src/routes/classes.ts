@@ -4,6 +4,12 @@ import { and, desc, eq, getTableColumns, ilike, or, sql } from "drizzle-orm";
 import { db } from "../db/index.js";
 import { requireRole } from "../middleware/auth.js";
 import { classes, departments, enrollments, subjects, user } from "../db/schema/index.js";
+import { getPgErrorCode, PG_FOREIGN_KEY_VIOLATION } from "../lib/db-errors.js";
+import {
+  classCreateSchema,
+  classUpdateSchema,
+  formatZodError,
+} from "../lib/validation.js";
 
 const router = express.Router();
 
@@ -146,39 +152,41 @@ router.get("/mine", requireRole("teacher", "student"), async (req, res) => {
   }
 });
 
+// The FK only guarantees the user exists; a class must be taught by a teacher.
+const isTeacher = async (userId: string) => {
+  const [row] = await db
+    .select({ role: user.role })
+    .from(user)
+    .where(eq(user.id, userId));
+  return row?.role === "teacher";
+};
+
 router.post("/", requireRole("admin", "teacher"), async (req, res) => {
   try {
-    const {
-      name,
-      teacherId,
-      subjectId,
-      capacity,
-      description,
-      status,
-      bannerUrl,
-      bannerCldPubId,
-    } = req.body;
+    const parsed = classCreateSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ error: formatZodError(parsed.error) });
+    }
+
+    const { schedules = [], ...values } = parsed.data;
 
     // Teachers can only create classes they teach; admins can assign any teacher
-    if (req.user!.role === "teacher" && teacherId !== req.user!.id) {
+    if (req.user!.role === "teacher" && values.teacherId !== req.user!.id) {
       return res
         .status(403)
         .json({ error: "Teachers can only create classes for themselves" });
     }
 
+    if (!(await isTeacher(values.teacherId))) {
+      return res.status(400).json({ error: "teacherId must belong to a teacher" });
+    }
+
     const [createdClass] = await db
       .insert(classes)
       .values({
-        subjectId,
+        ...values,
+        schedules,
         inviteCode: Math.random().toString(36).substring(2, 9),
-        name,
-        teacherId,
-        bannerCldPubId,
-        bannerUrl,
-        capacity,
-        description,
-        schedules: [],
-        status,
       })
       .returning({ id: classes.id });
 
@@ -186,6 +194,9 @@ router.post("/", requireRole("admin", "teacher"), async (req, res) => {
 
     res.status(201).json({ data: createdClass });
   } catch (error) {
+    if (getPgErrorCode(error) === PG_FOREIGN_KEY_VIOLATION) {
+      return res.status(400).json({ error: "Subject does not exist" });
+    }
     console.error("POST /classes error:", error);
     res.status(500).json({ error: "Failed to create class" });
   }
@@ -227,6 +238,129 @@ router.get("/:id", async (req, res) => {
   } catch (error) {
     console.error("GET /classes/:id error:", error);
     res.status(500).json({ error: "Failed to fetch class details" });
+  }
+});
+
+// Admins can edit any class; teachers only their own and cannot reassign it.
+// Archiving is a PATCH with { status: "archived" }.
+router.patch("/:id", requireRole("admin", "teacher"), async (req, res) => {
+  try {
+    const classId = Number(req.params.id);
+
+    if (!Number.isFinite(classId)) {
+      return res.status(400).json({ error: "Invalid class id" });
+    }
+
+    const parsed = classUpdateSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ error: formatZodError(parsed.error) });
+    }
+
+    const changes = parsed.data;
+    const { id: userId, role } = req.user!;
+
+    if (changes.teacherId !== undefined) {
+      if (role === "teacher" && changes.teacherId !== userId) {
+        return res
+          .status(403)
+          .json({ error: "Only admins can reassign a class to another teacher" });
+      }
+      if (!(await isTeacher(changes.teacherId))) {
+        return res
+          .status(400)
+          .json({ error: "teacherId must belong to a teacher" });
+      }
+    }
+
+    // Ownership and capacity rules live in the WHERE clause, so the check and
+    // the write happen atomically in one statement.
+    const conditions = [eq(classes.id, classId)];
+    if (role === "teacher") {
+      conditions.push(eq(classes.teacherId, userId));
+    }
+    if (changes.capacity !== undefined) {
+      conditions.push(
+        sql`${changes.capacity} >= (select count(*) from ${enrollments} where ${enrollments.classId} = ${classes.id})`
+      );
+    }
+
+    const [updatedClass] = await db
+      .update(classes)
+      .set(changes)
+      .where(and(...conditions))
+      .returning();
+
+    if (updatedClass) {
+      return res.status(200).json({ data: updatedClass });
+    }
+
+    // Nothing matched. Work out why; this only runs on the failure path.
+    const [existing] = await db
+      .select({ teacherId: classes.teacherId })
+      .from(classes)
+      .where(eq(classes.id, classId));
+
+    // Same 404 for "missing" and "not yours", so teachers can't probe other classes.
+    if (!existing || (role === "teacher" && existing.teacherId !== userId)) {
+      return res.status(404).json({ error: "Class not found" });
+    }
+
+    const [enrolled] = await db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(enrollments)
+      .where(eq(enrollments.classId, classId));
+
+    res.status(409).json({
+      error: `Capacity cannot be lower than the ${enrolled?.count ?? 0} student(s) already enrolled`,
+    });
+  } catch (error) {
+    if (getPgErrorCode(error) === PG_FOREIGN_KEY_VIOLATION) {
+      return res.status(400).json({ error: "Subject does not exist" });
+    }
+    console.error("PATCH /classes/:id error:", error);
+    res.status(500).json({ error: "Failed to update class" });
+  }
+});
+
+// Hard delete is admin-only and only for classes nobody has enrolled in
+// (e.g. created by mistake). Classes with students should be archived instead.
+router.delete("/:id", requireRole("admin"), async (req, res) => {
+  try {
+    const classId = Number(req.params.id);
+
+    if (!Number.isFinite(classId)) {
+      return res.status(400).json({ error: "Invalid class id" });
+    }
+
+    const [deletedClass] = await db
+      .delete(classes)
+      .where(
+        and(
+          eq(classes.id, classId),
+          sql`not exists (select 1 from ${enrollments} where ${enrollments.classId} = ${classes.id})`
+        )
+      )
+      .returning({ id: classes.id });
+
+    if (deletedClass) {
+      return res.status(200).json({ data: deletedClass });
+    }
+
+    const [enrolled] = await db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(enrollments)
+      .where(eq(enrollments.classId, classId));
+
+    if (!enrolled?.count) {
+      return res.status(404).json({ error: "Class not found" });
+    }
+
+    res.status(409).json({
+      error: `This class has ${enrolled.count} enrolled student(s). Archive it instead.`,
+    });
+  } catch (error) {
+    console.error("DELETE /classes/:id error:", error);
+    res.status(500).json({ error: "Failed to delete class" });
   }
 });
 
