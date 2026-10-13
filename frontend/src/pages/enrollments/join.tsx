@@ -50,7 +50,6 @@ const EnrollmentsJoin = () => {
       resource: "enrollments/join",
       values: {
         inviteCode: values.inviteCode,
-        studentId: currentUser.id,
       },
     });
 

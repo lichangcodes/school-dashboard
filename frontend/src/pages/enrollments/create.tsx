@@ -67,7 +67,6 @@ const EnrollmentsCreate = () => {
       resource: "enrollments",
       values: {
         classId: values.classId,
-        studentId: currentUser.id,
       },
     });
 

@@ -2,6 +2,7 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { inArray } from "drizzle-orm";
+import { hashPassword } from "better-auth/crypto";
 
 import { db } from "../src/db";
 import {
@@ -106,13 +107,16 @@ const seed = async () => {
     await db
       .insert(account)
       .values(
-        data.users.map((seedUser) => ({
-          id: `acc_${seedUser.id}`,
-          userId: seedUser.id,
-          accountId: seedUser.email,
-          providerId: "credentials",
-          password: seedUser.password,
-        }))
+        await Promise.all(
+          data.users.map(async (seedUser) => ({
+            id: `acc_${seedUser.id}`,
+            userId: seedUser.id,
+            // Match what Better Auth's email/password sign-up writes, so seeded users can sign in
+            accountId: seedUser.id,
+            providerId: "credential",
+            password: await hashPassword(seedUser.password),
+          }))
+        )
       )
       .onConflictDoNothing({ target: [account.providerId, account.accountId] });
   }

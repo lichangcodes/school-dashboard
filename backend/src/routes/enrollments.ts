@@ -2,6 +2,7 @@ import express from "express";
 import { and, eq, getTableColumns } from "drizzle-orm";
 
 import { db } from "../db/index.js";
+import { requireRole } from "../middleware/auth.js";
 import { classes, departments, enrollments, subjects, user } from "../db/schema/index.js";
 
 const router = express.Router();
@@ -34,14 +35,14 @@ const getEnrollmentDetails = async (enrollmentId: number) => {
 };
 
 // Create enrollment
-router.post("/", async (req, res) => {
+router.post("/", requireRole("student"), async (req, res) => {
   try {
-    const { classId, studentId } = req.body;
+    const { classId } = req.body;
+    // Always enroll the signed-in student; never trust a studentId from the client
+    const studentId = req.user!.id;
 
-    if (!classId || !studentId) {
-      return res
-        .status(400)
-        .json({ error: "classId and studentId are required" });
+    if (!classId) {
+      return res.status(400).json({ error: "classId is required" });
     }
 
     const [classRecord] = await db
@@ -91,14 +92,13 @@ router.post("/", async (req, res) => {
 });
 
 // Join class by invite code
-router.post("/join", async (req, res) => {
+router.post("/join", requireRole("student"), async (req, res) => {
   try {
-    const { inviteCode, studentId } = req.body;
+    const { inviteCode } = req.body;
+    const studentId = req.user!.id;
 
-    if (!inviteCode || !studentId) {
-      return res
-        .status(400)
-        .json({ error: "inviteCode and studentId are required" });
+    if (!inviteCode) {
+      return res.status(400).json({ error: "inviteCode is required" });
     }
 
     const [classRecord] = await db

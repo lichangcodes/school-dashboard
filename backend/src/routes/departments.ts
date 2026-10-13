@@ -2,6 +2,7 @@ import express from "express";
 import { and, desc, eq, getTableColumns, ilike, or, sql } from "drizzle-orm";
 
 import { db } from "../db/index.js";
+import { requireRole } from "../middleware/auth.js";
 import {
   classes,
   departments,
@@ -70,7 +71,7 @@ router.get("/", async (req, res) => {
   }
 });
 
-router.post("/", async (req, res) => {
+router.post("/", requireRole("admin"), async (req, res) => {
   try {
     const { code, name, description } = req.body;
 

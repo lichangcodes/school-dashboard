@@ -1,3 +1,4 @@
+import type { HttpError } from "@refinedev/core";
 import { createDataProvider, CreateDataProviderOptions } from "@refinedev/rest";
 
 import { CreateResponse, GetOneResponse, ListResponse } from "@/types";
@@ -83,6 +84,24 @@ const options: CreateDataProviderOptions = {
   },
 };
 
-const { dataProvider } = createDataProvider(BACKEND_BASE_URL, options);
+const { dataProvider } = createDataProvider(BACKEND_BASE_URL, options, {
+  // Send the Better Auth session cookie to the API (it lives on a different origin)
+  credentials: "include",
+  hooks: {
+    afterResponse: [
+      // getList/getOne don't check response.ok, so surface auth errors here for authProvider.onError
+      async (_request, _options, response) => {
+        if (response.status === 401 || response.status === 403) {
+          const body = await response.clone().json().catch(() => ({}));
+          const error: HttpError = {
+            message: body.error ?? response.statusText,
+            statusCode: response.status,
+          };
+          throw error;
+        }
+      },
+    ],
+  },
+});
 
 export { dataProvider };

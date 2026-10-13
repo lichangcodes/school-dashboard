@@ -2,6 +2,7 @@ import express from "express";
 import { and, desc, eq, getTableColumns, ilike, or, sql } from "drizzle-orm";
 
 import { db } from "../db/index.js";
+import { requireRole } from "../middleware/auth.js";
 import { classes, departments, enrollments, subjects, user } from "../db/schema/index.js";
 
 const router = express.Router();
@@ -79,7 +80,73 @@ router.get("/", async (req, res) => {
   }
 });
 
-router.post("/", async (req, res) => {
+// Classes for the signed-in user: ones they're enrolled in (student) or teach (teacher).
+// Registered before "/:id" so "mine" isn't parsed as an id.
+router.get("/mine", requireRole("teacher", "student"), async (req, res) => {
+  try {
+    const { page = 1, limit = 10 } = req.query;
+
+    const currentPage = Math.max(1, +page);
+    const limitPerPage = Math.max(1, +limit);
+    const offset = (currentPage - 1) * limitPerPage;
+
+    const { id: userId, role } = req.user!;
+
+    const whereClause =
+      role === "teacher"
+        ? eq(classes.teacherId, userId)
+        : eq(enrollments.studentId, userId);
+
+    // Students reach their classes through enrollments; teachers own them directly
+    const countQuery = db
+      .select({ count: sql<number>`count(*)` })
+      .from(classes)
+      .$dynamic();
+    const listQuery = db
+      .select({
+        ...getTableColumns(classes),
+        subject: {
+          ...getTableColumns(subjects),
+        },
+        teacher: {
+          ...getTableColumns(user),
+        },
+      })
+      .from(classes)
+      .leftJoin(subjects, eq(classes.subjectId, subjects.id))
+      .leftJoin(user, eq(classes.teacherId, user.id))
+      .$dynamic();
+
+    if (role === "student") {
+      countQuery.innerJoin(enrollments, eq(enrollments.classId, classes.id));
+      listQuery.innerJoin(enrollments, eq(enrollments.classId, classes.id));
+    }
+
+    const countResult = await countQuery.where(whereClause);
+    const totalCount = countResult[0]?.count ?? 0;
+
+    const classesList = await listQuery
+      .where(whereClause)
+      .orderBy(desc(classes.createdAt))
+      .limit(limitPerPage)
+      .offset(offset);
+
+    res.status(200).json({
+      data: classesList,
+      pagination: {
+        page: currentPage,
+        limit: limitPerPage,
+        total: totalCount,
+        totalPages: Math.ceil(totalCount / limitPerPage),
+      },
+    });
+  } catch (error) {
+    console.error("GET /classes/mine error:", error);
+    res.status(500).json({ error: "Failed to fetch your classes" });
+  }
+});
+
+router.post("/", requireRole("admin", "teacher"), async (req, res) => {
   try {
     const {
       name,
@@ -91,6 +158,13 @@ router.post("/", async (req, res) => {
       bannerUrl,
       bannerCldPubId,
     } = req.body;
+
+    // Teachers can only create classes they teach; admins can assign any teacher
+    if (req.user!.role === "teacher" && teacherId !== req.user!.id) {
+      return res
+        .status(403)
+        .json({ error: "Teachers can only create classes for themselves" });
+    }
 
     const [createdClass] = await db
       .insert(classes)

@@ -14,6 +14,7 @@ import statsRouter from "./routes/stats.js";
 import enrollmentsRouter from "./routes/enrollments.js";
 
 // import securityMiddleware from "./middleware/security.js";
+import { requireAuth } from "./middleware/auth.js";
 import { auth } from "./lib/auth.js";
 
 const app = express();
@@ -33,12 +34,12 @@ app.use(express.json());
 
 // app.use(securityMiddleware);
 
-app.use("/api/subjects", subjectsRouter);
-app.use("/api/users", usersRouter);
-app.use("/api/classes", classesRouter);
-app.use("/api/departments", departmentsRouter);
-app.use("/api/stats", statsRouter);
-app.use("/api/enrollments", enrollmentsRouter);
+app.use("/api/subjects", requireAuth, subjectsRouter);
+app.use("/api/users", requireAuth, usersRouter);
+app.use("/api/classes", requireAuth, classesRouter);
+app.use("/api/departments", requireAuth, departmentsRouter);
+app.use("/api/stats", requireAuth, statsRouter);
+app.use("/api/enrollments", requireAuth, enrollmentsRouter);
 
 app.get("/", (req, res) => {
   res.send("Backend server is running!");

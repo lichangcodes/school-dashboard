@@ -108,7 +108,9 @@ export const authProvider: AuthProvider = {
     };
   },
   onError: async (error) => {
-    if (error.response?.status === 401) {
+    const status = error?.statusCode ?? error?.response?.status;
+
+    if (status === 401) {
       return {
         logout: true,
       };
@@ -117,13 +119,17 @@ export const authProvider: AuthProvider = {
     return { error };
   },
   check: async () => {
-    const user = localStorage.getItem("user");
+    // Ask the backend: the cookie session can expire while localStorage still has a user
+    const { data } = await authClient.getSession();
 
-    if (user) {
+    if (data?.user) {
+      localStorage.setItem("user", JSON.stringify(data.user));
       return {
         authenticated: true,
       };
     }
+
+    localStorage.removeItem("user");
 
     return {
       authenticated: false,

@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 import {
+  CanAccess,
   useLink,
   useMenu,
   useRefineOptions,
@@ -56,11 +57,13 @@ export function Sidebar() {
         )}
       >
         {menuItems.map((item: TreeMenuItem) => (
-          <SidebarItem
+          <CanAccess
             key={item.key || item.name}
-            item={item}
-            selectedKey={selectedKey}
-          />
+            resource={item.name}
+            action="list"
+          >
+            <SidebarItem item={item} selectedKey={selectedKey} />
+          </CanAccess>
         ))}
       </ShadcnSidebarContent>
     </ShadcnSidebar>

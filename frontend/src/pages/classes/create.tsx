@@ -24,12 +24,13 @@ import { CreateView } from "@/components/refine-ui/views/create-view";
 import { Breadcrumb } from "@/components/refine-ui/layout/breadcrumb";
 
 import { Textarea } from "@/components/ui/textarea";
-import { useBack, useList } from "@refinedev/core";
+import { useBack, useGetIdentity, useList } from "@refinedev/core";
 import { Loader2 } from "lucide-react";
 import { classSchema } from "@/lib/schema";
 import UploadWidget from "@/components/upload-widget";
-import { Subject, User } from "@/types";
+import { Subject, User, UserRole } from "@/types";
 import z from "zod";
+import { useEffect } from "react";
 
 const ClassesCreate = () => {
   const back = useBack();
@@ -53,6 +54,16 @@ const ClassesCreate = () => {
   } = form;
 
   const bannerPublicId = form.watch("bannerCldPubId");
+
+  // Teachers can only create classes they teach (enforced by the API), so lock the field to them
+  const { data: currentUser } = useGetIdentity<User>();
+  const isTeacher = currentUser?.role === UserRole.TEACHER;
+
+  useEffect(() => {
+    if (isTeacher && currentUser) {
+      form.setValue("teacherId", currentUser.id);
+    }
+  }, [isTeacher, currentUser, form]);
 
   const onSubmit = async (values: z.infer<typeof classSchema>) => {
     try {
@@ -228,7 +239,7 @@ const ClassesCreate = () => {
                         <Select
                           onValueChange={field.onChange}
                           value={field.value?.toString()}
-                          disabled={teachersLoading}
+                          disabled={teachersLoading || isTeacher}
                         >
                           <FormControl>
                             <SelectTrigger className="w-full">

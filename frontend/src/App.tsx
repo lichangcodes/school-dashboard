@@ -17,6 +17,7 @@ import {
   Building2,
   ClipboardCheck,
   GraduationCap,
+  LibraryBig,
   Home,
   Users,
 } from "lucide-react";
@@ -30,7 +31,9 @@ import { dataProvider } from "./providers/data";
 import ClassesList from "./pages/classes/list";
 import ClassesCreate from "./pages/classes/create";
 import ClassesShow from "./pages/classes/show";
+import MyClasses from "./pages/classes/mine";
 import { authProvider } from "./providers/auth";
+import { accessControlProvider } from "./providers/access-control";
 import { Login } from "./pages/login";
 import { Register } from "./pages/register";
 import DepartmentsList from "./pages/departments/list";
@@ -51,6 +54,7 @@ function App() {
             <Refine
               dataProvider={dataProvider}
               authProvider={authProvider}
+              accessControlProvider={accessControlProvider}
               notificationProvider={useNotificationProvider()}
               routerProvider={routerProvider}
               options={{
@@ -65,6 +69,14 @@ function App() {
                   meta: {
                     label: "Home",
                     icon: <Home />,
+                  },
+                },
+                {
+                  name: "my-classes",
+                  list: "/my-classes",
+                  meta: {
+                    label: "My Classes",
+                    icon: <LibraryBig />,
                   },
                 },
                 {
@@ -101,7 +113,7 @@ function App() {
                   list: "/enrollments/create",
                   create: "/enrollments/create",
                   meta: {
-                    label: "Enrollments",
+                    label: "Enroll",
                     icon: <ClipboardCheck />,
                   },
                 },
@@ -162,6 +174,8 @@ function App() {
                     <Route path="join" element={<EnrollmentsJoin />} />
                     <Route path="confirm" element={<EnrollmentConfirm />} />
                   </Route>
+
+                  <Route path="my-classes" element={<MyClasses />} />
 
                   <Route path="classes">
                     <Route index element={<ClassesList />} />
