@@ -457,4 +457,50 @@ router.get("/:id/users", async (req, res) => {
   }
 });
 
+// Remove a student from a class. Students can drop themselves, teachers can
+// remove students from classes they teach, admins can remove anyone.
+router.delete("/:id/students/:studentId", async (req, res) => {
+  try {
+    const classId = Number(req.params.id);
+    const { studentId } = req.params;
+    const { id: userId, role } = req.user!;
+
+    if (!Number.isFinite(classId)) {
+      return res.status(400).json({ error: "Invalid class id" });
+    }
+
+    if (role === "student" && studentId !== userId) {
+      return res
+        .status(403)
+        .json({ error: "Students can only drop their own enrollments" });
+    }
+
+    const conditions = [
+      eq(enrollments.classId, classId),
+      eq(enrollments.studentId, studentId),
+    ];
+    // Ownership is checked in the same statement as the delete.
+    if (role === "teacher") {
+      conditions.push(
+        sql`exists (select 1 from ${classes} where ${classes.id} = ${classId} and ${classes.teacherId} = ${userId})`
+      );
+    }
+
+    const [removed] = await db
+      .delete(enrollments)
+      .where(and(...conditions))
+      .returning({ id: enrollments.id });
+
+    // Same 404 for "not enrolled" and "not your class".
+    if (!removed) {
+      return res.status(404).json({ error: "Enrollment not found" });
+    }
+
+    res.status(200).json({ data: removed });
+  } catch (error) {
+    console.error("DELETE /classes/:id/students/:studentId error:", error);
+    res.status(500).json({ error: "Failed to remove student from class" });
+  }
+});
+
 export default router;
