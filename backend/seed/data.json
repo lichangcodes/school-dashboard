@@ -283,7 +283,6 @@
       "description": "Hands-on coding labs and weekly challenges.",
       "capacity": 35,
       "status": "active",
-      "inviteCode": "cs101-a",
       "subjectCode": "CS101",
       "teacherId": "teacher_1",
       "bannerUrl": "https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=1200&q=80"
@@ -293,7 +292,6 @@
       "description": "Practice sessions with weekly quizzes.",
       "capacity": 30,
       "status": "active",
-      "inviteCode": "cs102-b",
       "subjectCode": "CS102",
       "teacherId": "teacher_4",
       "bannerUrl": "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=1200&q=80"
@@ -303,7 +301,6 @@
       "description": "Build full-stack apps and deploy them.",
       "capacity": 40,
       "status": "active",
-      "inviteCode": "cs201-bootcamp",
       "subjectCode": "CS201",
       "teacherId": "teacher_2",
       "bannerUrl": "https://images.unsplash.com/photo-1498079022511-d15614cb1c02?auto=format&fit=crop&w=1200&q=80"
@@ -313,7 +310,6 @@
       "description": "Schema design and query workshops.",
       "capacity": 32,
       "status": "active",
-      "inviteCode": "cs202-practical",
       "subjectCode": "CS202",
       "teacherId": "teacher_5",
       "bannerUrl": "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=1200&q=80"
@@ -323,7 +319,6 @@
       "description": "Implementation deep dives and coding drills.",
       "capacity": 28,
       "status": "active",
-      "inviteCode": "cs301-a",
       "subjectCode": "CS301",
       "teacherId": "teacher_3",
       "bannerUrl": "https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=1200&q=80"
@@ -333,7 +328,6 @@
       "description": "Agile sprints and peer reviews.",
       "capacity": 36,
       "status": "active",
-      "inviteCode": "cs401-studio",
       "subjectCode": "CS401",
       "teacherId": "teacher_1",
       "bannerUrl": "https://images.unsplash.com/photo-1485217988980-11786ced9454?auto=format&fit=crop&w=1200&q=80"
@@ -343,7 +337,6 @@
       "description": "Problem solving sessions and review quizzes.",
       "capacity": 30,
       "status": "active",
-      "inviteCode": "math101-morning",
       "subjectCode": "MATH101",
       "teacherId": "teacher_3",
       "bannerUrl": "https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=1200&q=80"
@@ -353,7 +346,6 @@
       "description": "Advanced integration and applications.",
       "capacity": 30,
       "status": "active",
-      "inviteCode": "math102-evening",
       "subjectCode": "MATH102",
       "teacherId": "teacher_4",
       "bannerUrl": "https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=1200&q=80"
@@ -363,7 +355,6 @@
       "description": "Matrix methods with weekly labs.",
       "capacity": 32,
       "status": "active",
-      "inviteCode": "math201-a",
       "subjectCode": "MATH201",
       "teacherId": "teacher_1",
       "bannerUrl": "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=1200&q=80"
@@ -373,7 +364,6 @@
       "description": "Data analysis with real-world datasets.",
       "capacity": 34,
       "status": "active",
-      "inviteCode": "math301-applied",
       "subjectCode": "MATH301",
       "teacherId": "teacher_3",
       "bannerUrl": "https://images.unsplash.com/photo-1498079022511-d15614cb1c02?auto=format&fit=crop&w=1200&q=80"
@@ -383,7 +373,6 @@
       "description": "Logic puzzles and proofs.",
       "capacity": 26,
       "status": "active",
-      "inviteCode": "math302-workshop",
       "subjectCode": "MATH302",
       "teacherId": "teacher_5",
       "bannerUrl": "https://images.unsplash.com/photo-1485217988980-11786ced9454?auto=format&fit=crop&w=1200&q=80"
@@ -393,7 +382,6 @@
       "description": "Lab-focused biology with weekly experiments.",
       "capacity": 25,
       "status": "active",
-      "inviteCode": "bio101-lab",
       "subjectCode": "BIO101",
       "teacherId": "teacher_1",
       "bannerUrl": "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=1200&q=80"
@@ -403,7 +391,6 @@
       "description": "Detailed anatomy with guided labs.",
       "capacity": 28,
       "status": "active",
-      "inviteCode": "bio201-a",
       "subjectCode": "BIO201",
       "teacherId": "teacher_4",
       "bannerUrl": "https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=1200&q=80"
@@ -413,7 +400,6 @@
       "description": "Microbes, immunology, and lab safety.",
       "capacity": 24,
       "status": "active",
-      "inviteCode": "bio202-intensive",
       "subjectCode": "BIO202",
       "teacherId": "teacher_5",
       "bannerUrl": "https://images.unsplash.com/photo-1485217988980-11786ced9454?auto=format&fit=crop&w=1200&q=80"
@@ -423,7 +409,6 @@
       "description": "Genetics projects and case studies.",
       "capacity": 26,
       "status": "active",
-      "inviteCode": "bio301-research",
       "subjectCode": "BIO301",
       "teacherId": "teacher_1",
       "bannerUrl": "https://images.unsplash.com/photo-1498079022511-d15614cb1c02?auto=format&fit=crop&w=1200&q=80"
@@ -433,7 +418,6 @@
       "description": "Case studies and team presentations.",
       "capacity": 45,
       "status": "active",
-      "inviteCode": "bus101-evening",
       "subjectCode": "BUS101",
       "teacherId": "teacher_2",
       "bannerUrl": "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=1200&q=80"
@@ -443,7 +427,6 @@
       "description": "Campaign planning and analytics tools.",
       "capacity": 38,
       "status": "active",
-      "inviteCode": "bus201-lab",
       "subjectCode": "BUS201",
       "teacherId": "teacher_4",
       "bannerUrl": "https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=1200&q=80"
@@ -453,39 +436,38 @@
       "description": "Budgeting, cash flow, and valuation.",
       "capacity": 36,
       "status": "active",
-      "inviteCode": "bus301-a",
       "subjectCode": "BUS301",
       "teacherId": "teacher_1",
       "bannerUrl": "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=1200&q=80"
     }
   ],
   "enrollments": [
-    { "classInviteCode": "cs101-a", "studentId": "student_1" },
-    { "classInviteCode": "cs101-a", "studentId": "student_2" },
-    { "classInviteCode": "cs102-b", "studentId": "student_3" },
-    { "classInviteCode": "cs201-bootcamp", "studentId": "student_4" },
-    { "classInviteCode": "cs202-practical", "studentId": "student_5" },
-    { "classInviteCode": "cs301-a", "studentId": "student_6" },
-    { "classInviteCode": "cs401-studio", "studentId": "student_1" },
-    { "classInviteCode": "math101-morning", "studentId": "student_2" },
-    { "classInviteCode": "math201-a", "studentId": "student_3" },
-    { "classInviteCode": "math301-applied", "studentId": "student_4" },
-    { "classInviteCode": "bio101-lab", "studentId": "student_5" },
-    { "classInviteCode": "bio202-intensive", "studentId": "student_6" },
-    { "classInviteCode": "bus101-evening", "studentId": "student_1" },
-    { "classInviteCode": "bus201-lab", "studentId": "student_2" },
-    { "classInviteCode": "bus301-a", "studentId": "student_3" },
-    { "classInviteCode": "cs102-b", "studentId": "student_7" },
-    { "classInviteCode": "cs201-bootcamp", "studentId": "student_8" },
-    { "classInviteCode": "cs301-a", "studentId": "student_9" },
-    { "classInviteCode": "math102-evening", "studentId": "student_10" },
-    { "classInviteCode": "math302-workshop", "studentId": "student_11" },
-    { "classInviteCode": "bio201-a", "studentId": "student_12" },
-    { "classInviteCode": "bus201-lab", "studentId": "student_7" },
-    { "classInviteCode": "bus301-a", "studentId": "student_8" },
-    { "classInviteCode": "cs401-studio", "studentId": "student_9" },
-    { "classInviteCode": "bio301-research", "studentId": "student_10" },
-    { "classInviteCode": "math301-applied", "studentId": "student_11" },
-    { "classInviteCode": "cs202-practical", "studentId": "student_12" }
+    { "className": "Intro to Programming - Section A", "studentId": "student_1" },
+    { "className": "Intro to Programming - Section A", "studentId": "student_2" },
+    { "className": "Programming Fundamentals - Section B", "studentId": "student_3" },
+    { "className": "Web Development Bootcamp", "studentId": "student_4" },
+    { "className": "Databases - Practical", "studentId": "student_5" },
+    { "className": "Data Structures - Section A", "studentId": "student_6" },
+    { "className": "Software Engineering Studio", "studentId": "student_1" },
+    { "className": "Calculus I - Morning", "studentId": "student_2" },
+    { "className": "Linear Algebra - Section A", "studentId": "student_3" },
+    { "className": "Statistics - Applied", "studentId": "student_4" },
+    { "className": "General Biology Lab", "studentId": "student_5" },
+    { "className": "Microbiology - Intensive", "studentId": "student_6" },
+    { "className": "Intro to Business - Evening", "studentId": "student_1" },
+    { "className": "Marketing Essentials - Lab", "studentId": "student_2" },
+    { "className": "Finance Basics - Section A", "studentId": "student_3" },
+    { "className": "Programming Fundamentals - Section B", "studentId": "student_7" },
+    { "className": "Web Development Bootcamp", "studentId": "student_8" },
+    { "className": "Data Structures - Section A", "studentId": "student_9" },
+    { "className": "Calculus II - Evening", "studentId": "student_10" },
+    { "className": "Discrete Mathematics - Workshop", "studentId": "student_11" },
+    { "className": "Human Anatomy - Section A", "studentId": "student_12" },
+    { "className": "Marketing Essentials - Lab", "studentId": "student_7" },
+    { "className": "Finance Basics - Section A", "studentId": "student_8" },
+    { "className": "Software Engineering Studio", "studentId": "student_9" },
+    { "className": "Genetics - Research Focus", "studentId": "student_10" },
+    { "className": "Statistics - Applied", "studentId": "student_11" },
+    { "className": "Databases - Practical", "studentId": "student_12" }
   ]
 }

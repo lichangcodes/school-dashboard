@@ -14,7 +14,6 @@ import {
 } from "@/components/refine-ui/views/show-view";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { bannerPhoto } from "@/lib/cloudinary";
@@ -276,23 +275,6 @@ const ClassesShow = () => {
             <p>{classDetails?.subject?.description}</p>
           </div>
         </div>
-
-        <Separator />
-
-        {/* Join Class Section */}
-        <div className="join">
-          <h2>🎓 Join Class</h2>
-
-          <ol>
-            <li>Ask your teacher for the invite code.</li>
-            <li>Click on &quot;Join Class&quot; button.</li>
-            <li>Paste the code and click &quot;Join&quot;</li>
-          </ol>
-        </div>
-
-        <Button size="lg" className="w-full">
-          Join Class
-        </Button>
       </Card>
 
       <Card className="hover:shadow-md transition-shadow">

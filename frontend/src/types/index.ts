@@ -112,7 +112,6 @@ export type ClassDetails = {
   teacher?: User;
   department?: Department;
   schedules: Schedule[];
-  inviteCode?: string;
 };
 
 export type SignUpPayload = {

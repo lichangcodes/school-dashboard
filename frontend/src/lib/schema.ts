@@ -70,7 +70,6 @@ export const classSchema = z.object({
     .min(1, "Class banner is required"),
   // Only Cloudinary uploads have a public id; seeded banners are plain URLs
   bannerCldPubId: z.string().optional(),
-  inviteCode: z.string().optional(),
   schedules: z.array(scheduleSchema).optional(),
 });
 

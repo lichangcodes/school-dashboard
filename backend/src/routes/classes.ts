@@ -1,5 +1,5 @@
 import express from "express";
-import { and, desc, eq, getTableColumns, ilike, ne, or, sql } from "drizzle-orm";
+import { and, desc, eq, getTableColumns, ilike, ne, sql } from "drizzle-orm";
 
 import { db } from "../db/index.js";
 import { requireRole } from "../middleware/auth.js";
@@ -26,12 +26,7 @@ router.get("/", async (req, res) => {
     const filterConditions = [];
 
     if (search) {
-      filterConditions.push(
-        or(
-          ilike(classes.name, `%${search}%`),
-          ilike(classes.inviteCode, `%${search}%`)
-        )
-      );
+      filterConditions.push(ilike(classes.name, `%${search}%`));
     }
 
     if (subject) {
@@ -190,11 +185,7 @@ router.post("/", requireRole("admin", "teacher"), async (req, res) => {
 
     const [createdClass] = await db
       .insert(classes)
-      .values({
-        ...values,
-        schedules,
-        inviteCode: Math.random().toString(36).substring(2, 9),
-      })
+      .values({ ...values, schedules })
       .returning({ id: classes.id });
 
     if (!createdClass) throw Error;

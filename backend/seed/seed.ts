@@ -42,14 +42,13 @@ type SeedClass = {
   description: string;
   capacity: number;
   status: "active" | "inactive" | "archived";
-  inviteCode: string;
   subjectCode: string;
   teacherId: string;
   bannerUrl: string;
 };
 
 type SeedEnrollment = {
-  classInviteCode: string;
+  className: string;
   studentId: string;
 };
 
@@ -180,7 +179,6 @@ const seed = async () => {
       description: classItem.description,
       capacity: classItem.capacity,
       status: classItem.status,
-      inviteCode: classItem.inviteCode,
       subjectId: ensureMapValue(subjectMap, classItem.subjectCode, "subject"),
       teacherId: classItem.teacherId,
       bannerUrl: classItem.bannerUrl,
@@ -188,23 +186,27 @@ const seed = async () => {
       schedules: [],
     }));
 
-    await db
-      .insert(classes)
-      .values(classesToInsert)
-      .onConflictDoNothing({ target: classes.inviteCode });
+    await db.insert(classes).values(classesToInsert);
   }
 
-  const classInviteCodes = data.classes.map(
-    (classItem) => classItem.inviteCode
-  );
+  const classNames = data.classes.map((classItem) => classItem.name);
   const classRows =
-    classInviteCodes.length === 0
+    classNames.length === 0
       ? []
       : await db
-          .select({ id: classes.id, inviteCode: classes.inviteCode })
+          .select({ id: classes.id, name: classes.name })
           .from(classes)
-          .where(inArray(classes.inviteCode, classInviteCodes));
-  const classMap = new Map(classRows.map((row) => [row.inviteCode, row.id]));
+          .where(inArray(classes.name, classNames));
+  const classMap = new Map(classRows.map((row) => [row.name, row.id]));
+
+  if (data.enrollments.length) {
+    await db.insert(enrollments).values(
+      data.enrollments.map((enrollment) => ({
+        classId: ensureMapValue(classMap, enrollment.className, "class"),
+        studentId: enrollment.studentId,
+      }))
+    );
+  }
 };
 
 seed()
