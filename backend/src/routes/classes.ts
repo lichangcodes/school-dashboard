@@ -1,7 +1,7 @@
 import express from "express";
 import { and, desc, eq, getTableColumns, ilike, ne, sql } from "drizzle-orm";
 
-import { db } from "../db/index.js";
+import { db, txDb } from "../db/index.js";
 import { requireRole } from "../middleware/auth.js";
 import { classes, departments, enrollments, subjects, user } from "../db/schema/index.js";
 import { getPgErrorCode, PG_FOREIGN_KEY_VIOLATION } from "../lib/db-errors.js";
@@ -271,7 +271,7 @@ router.patch("/:id", requireRole("admin", "teacher"), async (req, res) => {
     }
 
     // Ownership and capacity rules live in the WHERE clause, so the check and
-    // the write happen atomically in one statement.
+    // the write happen in one statement.
     const conditions = [eq(classes.id, classId)];
     if (role === "teacher") {
       conditions.push(eq(classes.teacherId, userId));
@@ -282,11 +282,24 @@ router.patch("/:id", requireRole("admin", "teacher"), async (req, res) => {
       );
     }
 
-    const [updatedClass] = await db
-      .update(classes)
-      .set(changes)
-      .where(and(...conditions))
-      .returning();
+    // Lock the row first, the same lock POST /enrollments takes. A single
+    // statement would count enrollments from a snapshot taken before it waited
+    // on that lock, so it could miss a student who just enrolled.
+    const updatedClass = await txDb.transaction(async (tx) => {
+      await tx
+        .select({ id: classes.id })
+        .from(classes)
+        .where(eq(classes.id, classId))
+        .for("update");
+
+      const [row] = await tx
+        .update(classes)
+        .set(changes)
+        .where(and(...conditions))
+        .returning();
+
+      return row;
+    });
 
     if (updatedClass) {
       return res.status(200).json({ data: updatedClass });

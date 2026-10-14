@@ -7,6 +7,7 @@ import {
   pgTable,
   text,
   timestamp,
+  unique,
   varchar,
 } from "drizzle-orm/pg-core";
 import { user } from "./auth.js";
@@ -93,7 +94,7 @@ export const enrollments = pgTable(
   (table) => ({
     studentIdIdx: index("enrollments_student_id_idx").on(table.studentId),
     classIdIdx: index("enrollments_class_id_idx").on(table.classId),
-    studentClassUnique: index("enrollments_student_class_unique").on(
+    studentClassUnique: unique("enrollments_student_class_unique").on(
       table.studentId,
       table.classId
     ),

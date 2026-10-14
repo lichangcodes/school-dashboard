@@ -43,6 +43,8 @@ const EnrollmentsCreate = () => {
 
   const { query: classesQuery } = useList<ClassDetails>({
     resource: "classes",
+    // The API rejects enrollment in inactive or archived classes
+    filters: [{ field: "status", operator: "eq", value: "active" }],
     pagination: {
       pageSize: 100,
     },
