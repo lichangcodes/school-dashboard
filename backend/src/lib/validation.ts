@@ -67,6 +67,11 @@ export const classUpdateSchema = classCreateSchema
     message: "No fields to update",
   });
 
+// studentId is deliberately absent: it always comes from the session.
+export const enrollmentCreateSchema = z.object({
+  classId: z.coerce.number().int().positive(),
+});
+
 // First issue only; enough for a form toast.
 export const formatZodError = (error: z.ZodError) => {
   const issue = error.issues[0];
