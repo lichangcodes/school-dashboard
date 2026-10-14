@@ -1,0 +1,9 @@
+{
+  // Typechecks the tests (Vitest strips types without checking them).
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "rootDir": "..",
+    "noEmit": true
+  },
+  "include": ["../src", "."]
+}

@@ -10,7 +10,7 @@ University management dashboard. Monorepo with two independent npm projects (no 
 ## Commands
 
 Backend (`cd backend`):
-- `npm run dev` — tsx watch on `src/index.ts`, serves `http://localhost:8000`
+- `npm run dev` — tsx watch on `src/index.ts`, serves `http://localhost:8000`. `src/app.ts` builds the Express app; `index.ts` only adds APM and calls `listen`.
 - `npm run build` / `npm start` — `tsc` to `dist/`, then `node dist/index.js`
 - `npx tsc --noEmit -p .` — typecheck
 - `npm run db:generate` — builds first, because `drizzle.config.ts` reads the schema from `dist/db/schema/*.js`, not `src`. Run it after editing `src/db/schema/*`, then `npm run db:migrate`.
@@ -20,7 +20,7 @@ Frontend (`cd frontend`):
 - `npm run dev` (Refine CLI wrapper around Vite, port 5173), `npm run build` (runs `tsc` then build)
 - `npx eslint .` — lint (no npm script)
 
-There is no test suite in either project yet.
+Backend tests (`cd backend`): `npm test` (Vitest + Supertest, in-process against `src/app.ts`), `npm run test:watch`, `npx tsc -p tests` to typecheck them. They need `backend/.env.test` (copy `.env.test.example`) pointing at a **separate Neon branch**: `tests/global-setup.ts` runs migrations and then truncates every table. `tests/env.ts` refuses to run if `.env.test` and `.env` share a `DATABASE_URL`. Test files run one at a time because they share the database. `tests/helpers.ts` signs users up through the real auth endpoint (admins are promoted in the DB) and inserts departments, subjects and classes directly. CI (`.github/workflows/ci.yml`) runs the backend typecheck and tests with the `TEST_DATABASE_URL` repo secret, and the frontend lint and build. The frontend has no tests.
 
 Env: copy `.env.example` → `.env` in each folder. The frontend's `VITE_BACKEND_BASE_URL` must end in `/api/` (the auth client appends `auth`, the data provider appends resource names). The backend's `FRONTEND_URL` drives both CORS and Better Auth `trustedOrigins`.
 
@@ -41,7 +41,6 @@ Env: copy `.env.example` → `.env` in each folder. The frontend's `VITE_BACKEND
 - Foreign keys in the department → subject → class chain are `ON DELETE RESTRICT`, so a delete fails while children exist. Enrollments still cascade from classes and users.
 - Imports use `.js` extensions (ESM, `"type": "module"`).
 - `src/db/index.ts` exports two clients. `db` uses `drizzle-orm/neon-http`, which **does not support interactive transactions**. `txDb` uses a `neon-serverless` WebSocket Pool and is for `txDb.transaction(...)` with row locks. `POST /enrollments` and `PATCH /classes/:id` both take `SELECT ... FOR UPDATE` on the class row, so seat counting and capacity changes are serialized per class. Inside the lock, count enrollments in a separate statement: a single statement's subquery uses a snapshot taken before it waited on the lock.
-- `scripts/enrollment-race.ts` fires concurrent requests at a running backend to check the enrollment rules (capacity, duplicates, inactive classes, capacity shrink). It creates and deletes its own TMP users and classes.
 - Schema: `src/db/schema/auth.ts` holds the Better Auth tables (`user` with a `role` pg enum) and `app.ts` holds departments → subjects → classes → enrollments. `classes.schedules` is jsonb. `enrollments_student_class_unique` is a unique constraint, so duplicate enrollments fail with 23505.
 - `src/middleware/security.ts` (Arcjet rate limiting) exists but is commented out in `index.ts`. `src/config/arcjet.ts` throws at import time without `ARCJET_KEY`.
 - APM (`apminsight`) is loaded dynamically at startup and fails silently if absent. `apminsightnode.json` holds a license key and is gitignored.
