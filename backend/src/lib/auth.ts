@@ -11,6 +11,14 @@ const SELF_ASSIGNABLE_ROLES = ["student", "teacher"];
 export const auth = betterAuth({
   secret: process.env.BETTER_AUTH_SECRET!,
   trustedOrigins: [process.env.FRONTEND_URL!],
+  // The app has no UI for these, and on the public demo anyone could use them
+  // to change a shared demo account's password or name.
+  disabledPaths: [
+    "/change-password",
+    "/update-user",
+    "/revoke-sessions",
+    "/revoke-other-sessions",
+  ],
   database: drizzleAdapter(db, {
     provider: "pg",
     schema,
