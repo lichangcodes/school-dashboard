@@ -57,7 +57,11 @@ export const ALLOWED_TYPES = [
 
 export const CLOUDINARY_UPLOAD_URL = import.meta.env.VITE_CLOUDINARY_UPLOAD_URL;
 export const CLOUDINARY_CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
-export const BACKEND_BASE_URL = import.meta.env.VITE_BACKEND_BASE_URL;
+// In production Vercel proxies /api to the backend (vercel.json), so the API
+// lives on the page's own origin and no env var is needed. Locally, set
+// VITE_BACKEND_BASE_URL to the dev server.
+export const BACKEND_BASE_URL =
+  import.meta.env.VITE_BACKEND_BASE_URL || `${window.location.origin}/api/`;
 
 export const BASE_URL = import.meta.env.VITE_API_URL;
 export const ACCESS_TOKEN_KEY = import.meta.env.VITE_ACCESS_TOKEN_KEY;
