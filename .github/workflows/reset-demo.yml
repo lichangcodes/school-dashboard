@@ -1,0 +1,29 @@
+name: Reset demo database
+
+# The public demo hands out admin, teacher and student logins, so visitors can
+# change or delete anything. Put it back to the seed data every night.
+on:
+  schedule:
+    - cron: "0 8 * * *" # 08:00 UTC daily
+  workflow_dispatch: # also allow a manual run from the Actions tab
+
+jobs:
+  reset:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    env:
+      DATABASE_URL: ${{ secrets.DEMO_DATABASE_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci
+      - name: Apply migrations
+        run: npm run db:migrate
+      - name: Reload seed data
+        run: npm run db:seed
