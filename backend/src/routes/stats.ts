@@ -2,33 +2,41 @@ import express from "express";
 import { desc, eq, getTableColumns, sql } from "drizzle-orm";
 
 import { db } from "../db/index.js";
-import { classes, departments, subjects, user } from "../db/schema/index.js";
+import { classes, departments, enrollments, subjects, user } from "../db/schema/index.js";
 
 const router = express.Router();
 
-// Overview counts for core entities
+// Overview counts for core entities. Counting happens in the database so the
+// numbers are right no matter how many rows there are.
 router.get("/overview", async (req, res) => {
   try {
     const [
       usersCount,
       teachersCount,
       adminsCount,
+      studentsCount,
       subjectsCount,
       departmentsCount,
       classesCount,
+      enrollmentsCount,
     ] = await Promise.all([
-      db.select({ count: sql<number>`count(*)` }).from(user),
+      db.select({ count: sql<number>`count(*)::int` }).from(user),
       db
-        .select({ count: sql<number>`count(*)` })
+        .select({ count: sql<number>`count(*)::int` })
         .from(user)
         .where(eq(user.role, "teacher")),
       db
-        .select({ count: sql<number>`count(*)` })
+        .select({ count: sql<number>`count(*)::int` })
         .from(user)
         .where(eq(user.role, "admin")),
-      db.select({ count: sql<number>`count(*)` }).from(subjects),
-      db.select({ count: sql<number>`count(*)` }).from(departments),
-      db.select({ count: sql<number>`count(*)` }).from(classes),
+      db
+        .select({ count: sql<number>`count(*)::int` })
+        .from(user)
+        .where(eq(user.role, "student")),
+      db.select({ count: sql<number>`count(*)::int` }).from(subjects),
+      db.select({ count: sql<number>`count(*)::int` }).from(departments),
+      db.select({ count: sql<number>`count(*)::int` }).from(classes),
+      db.select({ count: sql<number>`count(*)::int` }).from(enrollments),
     ]);
 
     res.status(200).json({
@@ -36,9 +44,11 @@ router.get("/overview", async (req, res) => {
         users: usersCount[0]?.count ?? 0,
         teachers: teachersCount[0]?.count ?? 0,
         admins: adminsCount[0]?.count ?? 0,
+        students: studentsCount[0]?.count ?? 0,
         subjects: subjectsCount[0]?.count ?? 0,
         departments: departmentsCount[0]?.count ?? 0,
         classes: classesCount[0]?.count ?? 0,
+        enrollments: enrollmentsCount[0]?.count ?? 0,
       },
     });
   } catch (error) {
@@ -97,7 +107,7 @@ router.get("/charts", async (req, res) => {
         db
           .select({
             role: user.role,
-            total: sql<number>`count(*)`,
+            total: sql<number>`count(*)::int`,
           })
           .from(user)
           .groupBy(user.role),
@@ -105,7 +115,7 @@ router.get("/charts", async (req, res) => {
           .select({
             departmentId: departments.id,
             departmentName: departments.name,
-            totalSubjects: sql<number>`count(${subjects.id})`,
+            totalSubjects: sql<number>`count(${subjects.id})::int`,
           })
           .from(departments)
           .leftJoin(subjects, eq(subjects.departmentId, departments.id))
@@ -114,7 +124,7 @@ router.get("/charts", async (req, res) => {
           .select({
             subjectId: subjects.id,
             subjectName: subjects.name,
-            totalClasses: sql<number>`count(${classes.id})`,
+            totalClasses: sql<number>`count(${classes.id})::int`,
           })
           .from(subjects)
           .leftJoin(classes, eq(classes.subjectId, subjects.id))

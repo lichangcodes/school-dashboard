@@ -246,7 +246,8 @@ function SidebarHeader() {
           }
         )}
       >
-        <div>{title.icon}</div>
+        {/* Don't let the (invisible) title squeeze the logo to zero width when collapsed */}
+        <div className="shrink-0">{title.icon}</div>
         <h2
           className={cn(
             "text-sm",
@@ -315,12 +316,18 @@ function SidebarButton({
   ...props
 }: SidebarButtonProps) {
   const Link = useLink();
+  const { open, isMobile } = useShadcnSidebar();
+  // Collapsed to icons on desktop. The label must go: it's wider than the
+  // 3rem rail and would spill past the sidebar's edge.
+  const iconOnly = !open && !isMobile;
+  const label = getDisplayName(item);
 
   const buttonContent = (
     <>
       <ItemIcon icon={item.meta?.icon ?? item.icon} isSelected={isSelected} />
       <span
         className={cn("tracking-[-0.00875rem]", {
+          hidden: iconOnly,
           "flex-1": rightIcon,
           "text-left": rightIcon,
           "line-clamp-1": !rightIcon,
@@ -331,9 +338,9 @@ function SidebarButton({
           "text-foreground": !isSelected,
         })}
       >
-        {getDisplayName(item)}
+        {label}
       </span>
-      {rightIcon}
+      {!iconOnly && rightIcon}
     </>
   );
 
@@ -342,9 +349,12 @@ function SidebarButton({
       asChild={!!(asLink && item.route)}
       variant="ghost"
       size="lg"
+      title={iconOnly ? label : undefined}
       className={cn(
-        "flex w-full items-center justify-start gap-2 py-2 !px-3 text-sm",
+        "flex w-full items-center gap-2 overflow-hidden py-2 !px-3 text-sm",
         {
+          "justify-start": !iconOnly,
+          "justify-center": iconOnly,
           "bg-sidebar-primary": isSelected,
           "hover:!bg-sidebar-primary/90": isSelected,
           "text-sidebar-primary-foreground": isSelected,
@@ -356,7 +366,12 @@ function SidebarButton({
       {...props}
     >
       {asLink && item.route ? (
-        <Link to={item.route} className={cn("flex w-full items-center gap-2")}>
+        <Link
+          to={item.route}
+          className={cn("flex w-full items-center gap-2", {
+            "justify-center": iconOnly,
+          })}
+        >
           {buttonContent}
         </Link>
       ) : (

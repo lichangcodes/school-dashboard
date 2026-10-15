@@ -10,7 +10,7 @@ University management dashboard. Monorepo with two independent npm projects (no 
 ## Commands
 
 Backend (`cd backend`):
-- `npm run dev` — tsx watch on `src/index.ts`, serves `http://localhost:8000`. `src/app.ts` builds the Express app; `index.ts` only adds APM and calls `listen`.
+- `npm run dev` — tsx watch on `src/index.ts`, serves `http://localhost:8000`. `src/app.ts` builds the Express app; `index.ts` only calls `listen`.
 - `npm run build` / `npm start` — `tsc` to `dist/`, then `node dist/index.js`
 - `npx tsc --noEmit -p .` — typecheck
 - `npm run db:generate` — builds first, because `drizzle.config.ts` reads the schema from `dist/db/schema/*.js`, not `src`. Run it after editing `src/db/schema/*`, then `npm run db:migrate`.
@@ -46,7 +46,6 @@ Env: copy `.env.example` → `.env` in each folder. The frontend's `VITE_BACKEND
 - `src/db/index.ts` exports two clients. `db` uses `drizzle-orm/neon-http`, which **does not support interactive transactions**. `txDb` uses a `neon-serverless` WebSocket Pool and is for `txDb.transaction(...)` with row locks. `POST /enrollments` and `PATCH /classes/:id` both take `SELECT ... FOR UPDATE` on the class row, so seat counting and capacity changes are serialized per class. Inside the lock, count enrollments in a separate statement: a single statement's subquery uses a snapshot taken before it waited on the lock.
 - Schema: `src/db/schema/auth.ts` holds the Better Auth tables (`user` with a `role` pg enum) and `app.ts` holds departments → subjects → classes → enrollments. `classes.schedules` is jsonb. `enrollments_student_class_unique` is a unique constraint, so duplicate enrollments fail with 23505.
 - `src/middleware/security.ts` (Arcjet rate limiting) exists but is commented out in `index.ts`. `src/config/arcjet.ts` throws at import time without `ARCJET_KEY`.
-- APM (`apminsight`) is loaded dynamically at startup and fails silently if absent. `apminsightnode.json` holds a license key and is gitignored.
 
 ### Frontend conventions
 - Refine `resources` in `App.tsx` define both routes and sidebar menu. The `users` resource is shown as "Faculty" at `/faculty`.
