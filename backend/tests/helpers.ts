@@ -1,7 +1,8 @@
 // Shared test setup. Records the test isn't about (departments, subjects,
 // classes) are inserted straight into the database. Users sign up through the
 // real auth endpoint so each one gets a real session cookie.
-import request from "supertest";
+import request, { type Response } from "supertest";
+import { expect } from "vitest";
 import { count, eq } from "drizzle-orm";
 
 import app from "../src/app.js";
@@ -84,4 +85,10 @@ export const enrollmentCount = async (classId: number) => {
     .from(enrollments)
     .where(eq(enrollments.classId, classId));
   return row!.n;
+};
+
+// Like expect(res.status).toBe(status), but a failure also prints the response
+// body, so you can see why a request was rejected (or what it returned).
+export const expectStatus = (res: Response, status: number) => {
+  expect(res.status, `body: ${JSON.stringify(res.body)}`).toBe(status);
 };

@@ -6,6 +6,7 @@ import {
   createUser,
   enroll,
   enrollmentCount,
+  expectStatus,
   type TestUser,
 } from "./helpers.js";
 
@@ -24,7 +25,7 @@ describe("POST /api/enrollments", () => {
 
     const res = await students[0]!.agent.post("/api/enrollments").send({ classId: cls.id });
 
-    expect(res.status).toBe(201);
+    expectStatus(res, 201);
     expect(res.body.data.studentId).toBe(students[0]!.id);
   });
 
@@ -35,7 +36,7 @@ describe("POST /api/enrollments", () => {
       .post("/api/enrollments")
       .send({ classId: cls.id, studentId: students[1]!.id });
 
-    expect(res.status).toBe(201);
+    expectStatus(res, 201);
     expect(res.body.data.studentId).toBe(students[0]!.id);
   });
 
@@ -44,7 +45,7 @@ describe("POST /api/enrollments", () => {
 
     const res = await anonymous().post("/api/enrollments").send({ classId: cls.id });
 
-    expect(res.status).toBe(401);
+    expectStatus(res, 401);
   });
 
   it("only lets students enroll", async () => {
@@ -52,7 +53,7 @@ describe("POST /api/enrollments", () => {
 
     const res = await teacher.agent.post("/api/enrollments").send({ classId: cls.id });
 
-    expect(res.status).toBe(403);
+    expectStatus(res, 403);
   });
 
   it.each(["inactive", "archived"] as const)("rejects a %s class", async (status) => {
@@ -60,7 +61,7 @@ describe("POST /api/enrollments", () => {
 
     const res = await students[0]!.agent.post("/api/enrollments").send({ classId: cls.id });
 
-    expect(res.status).toBe(409);
+    expectStatus(res, 409);
     expect(await enrollmentCount(cls.id)).toBe(0);
   });
 
@@ -70,7 +71,7 @@ describe("POST /api/enrollments", () => {
 
     const res = await students[1]!.agent.post("/api/enrollments").send({ classId: cls.id });
 
-    expect(res.status).toBe(409);
+    expectStatus(res, 409);
     expect(res.body.error).toBe("Class is full");
   });
 
