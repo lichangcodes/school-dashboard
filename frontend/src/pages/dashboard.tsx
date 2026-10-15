@@ -1,5 +1,4 @@
-import { useMemo } from "react";
-import { useLink, useList } from "@refinedev/core";
+import { useCustom, useLink } from "@refinedev/core";
 import {
   Bar,
   BarChart,
@@ -14,174 +13,83 @@ import {
 import {
   BookOpen,
   Building2,
+  ClipboardCheck,
   GraduationCap,
   Layers,
   ShieldCheck,
+  UserRound,
   Users,
 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import type { Department, Subject, User } from "@/types";
+import { BACKEND_BASE_URL } from "@/constants";
 
-type ClassListItem = {
-  id: number;
-  name: string;
-  createdAt?: string;
-  subject?: {
+// Shapes returned by GET /api/stats/*. The backend does the counting, so the
+// dashboard is right however many rows exist.
+type Overview = {
+  users: number;
+  teachers: number;
+  admins: number;
+  students: number;
+  subjects: number;
+  departments: number;
+  classes: number;
+  enrollments: number;
+};
+
+type Charts = {
+  usersByRole: { role: string; total: number }[];
+  subjectsByDepartment: { departmentName: string; totalSubjects: number }[];
+  classesBySubject: { subjectName: string; totalClasses: number }[];
+};
+
+type Latest = {
+  latestClasses: {
+    id: number;
     name: string;
-  };
-  teacher?: {
-    name: string;
-  };
+    subject: { name: string } | null;
+    teacher: { name: string } | null;
+  }[];
+  latestTeachers: { id: string; name: string; email: string }[];
 };
 
 const roleColors = ["#f97316", "#0ea5e9", "#22c55e", "#a855f7"];
 
+const useStats = <T,>(path: string) => {
+  const { result } = useCustom<{ data: T }>({
+    url: `${BACKEND_BASE_URL}stats/${path}`,
+    method: "get",
+  });
+  return result.data?.data;
+};
+
+const topFive = <T,>(rows: T[], key: (row: T) => number) =>
+  [...rows].sort((a, b) => key(b) - key(a)).slice(0, 5);
+
 const Dashboard = () => {
   const Link = useLink();
-  const { query: usersQuery } = useList<User>({
-    resource: "users",
-    pagination: { mode: "off" },
-  });
+  const overview = useStats<Overview>("overview");
+  const charts = useStats<Charts>("charts");
+  const latest = useStats<Latest>("latest");
 
-  const { query: subjectsQuery } = useList<Subject>({
-    resource: "subjects",
-    pagination: { mode: "off" },
-  });
+  const usersByRole = charts?.usersByRole ?? [];
+  const subjectsByDepartment = charts?.subjectsByDepartment ?? [];
+  const classesBySubject = charts?.classesBySubject ?? [];
+  const newestClasses = latest?.latestClasses ?? [];
+  const newestTeachers = latest?.latestTeachers ?? [];
 
-  const { query: departmentsQuery } = useList<Department>({
-    resource: "departments",
-    pagination: { mode: "off" },
-  });
-
-  const { query: classesQuery } = useList<ClassListItem>({
-    resource: "classes",
-    pagination: { mode: "off" },
-  });
-
-  const users = usersQuery.data?.data ?? [];
-  const subjects = subjectsQuery.data?.data ?? [];
-  const departments = departmentsQuery.data?.data ?? [];
-  const classes = classesQuery.data?.data ?? [];
-
-  const usersByRole = useMemo(() => {
-    const counts = users.reduce<Record<string, number>>((acc, user) => {
-      const role = user.role ?? "unknown";
-      acc[role] = (acc[role] || 0) + 1;
-      return acc;
-    }, {});
-
-    return Object.entries(counts).map(([role, total]) => ({ role, total }));
-  }, [users]);
-
-  const subjectsByDepartment = useMemo(() => {
-    const counts = subjects.reduce<Record<string, number>>((acc, subject) => {
-      const departmentName =
-        (subject as { department?: { name?: string } }).department?.name ??
-        "Unassigned";
-      acc[departmentName] = (acc[departmentName] || 0) + 1;
-      return acc;
-    }, {});
-
-    return Object.entries(counts).map(([departmentName, totalSubjects]) => ({
-      departmentName,
-      totalSubjects,
-    }));
-  }, [subjects]);
-
-  const classesBySubject = useMemo(() => {
-    const counts = classes.reduce<Record<string, number>>((acc, classItem) => {
-      const subjectName = classItem.subject?.name ?? "Unassigned";
-      acc[subjectName] = (acc[subjectName] || 0) + 1;
-      return acc;
-    }, {});
-
-    return Object.entries(counts).map(([subjectName, totalClasses]) => ({
-      subjectName,
-      totalClasses,
-    }));
-  }, [classes]);
-
-  const newestClasses = useMemo(() => {
-    return [...classes]
-      .sort((a, b) => {
-        const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-        const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-        return bTime - aTime;
-      })
-      .slice(0, 5);
-  }, [classes]);
-
-  const newestTeachers = useMemo(() => {
-    return users
-      .filter((user) => user.role === "teacher")
-      .sort((a, b) => {
-        const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-        const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-        return bTime - aTime;
-      })
-      .slice(0, 5);
-  }, [users]);
-
-  const topDepartments = useMemo(() => {
-    return [...subjectsByDepartment]
-      .sort((a, b) => b.totalSubjects - a.totalSubjects)
-      .slice(0, 5)
-      .map((item, index) => ({
-        ...item,
-        departmentId: index,
-      }));
-  }, [subjectsByDepartment]);
-
-  const topSubjects = useMemo(() => {
-    return [...classesBySubject]
-      .sort((a, b) => b.totalClasses - a.totalClasses)
-      .slice(0, 5)
-      .map((item, index) => ({
-        ...item,
-        subjectId: index,
-      }));
-  }, [classesBySubject]);
+  const topDepartments = topFive(subjectsByDepartment, (d) => d.totalSubjects);
+  const topSubjects = topFive(classesBySubject, (s) => s.totalClasses);
 
   const kpis = [
-    {
-      label: "Total Users",
-      value: users.length,
-      icon: Users,
-      accent: "text-blue-600",
-    },
-    {
-      label: "Teachers",
-      value: users.filter((user) => user.role === "teacher").length,
-      icon: GraduationCap,
-      accent: "text-emerald-600",
-    },
-    {
-      label: "Admins",
-      value: users.filter((user) => user.role === "admin").length,
-      icon: ShieldCheck,
-      accent: "text-amber-600",
-    },
-    {
-      label: "Subjects",
-      value: subjects.length,
-      icon: BookOpen,
-      accent: "text-purple-600",
-    },
-    {
-      label: "Departments",
-      value: departments.length,
-      icon: Building2,
-      accent: "text-cyan-600",
-    },
-    {
-      label: "Classes",
-      value: classes.length,
-      icon: Layers,
-      accent: "text-rose-600",
-    },
+    { label: "Total Users", value: overview?.users, icon: Users, accent: "text-blue-600" },
+    { label: "Teachers", value: overview?.teachers, icon: GraduationCap, accent: "text-emerald-600" },
+    { label: "Admins", value: overview?.admins, icon: ShieldCheck, accent: "text-amber-600" },
+    { label: "Subjects", value: overview?.subjects, icon: BookOpen, accent: "text-purple-600" },
+    { label: "Departments", value: overview?.departments, icon: Building2, accent: "text-cyan-600" },
+    { label: "Classes", value: overview?.classes, icon: Layers, accent: "text-rose-600" },
   ];
 
   return (
@@ -210,7 +118,7 @@ const Dashboard = () => {
                   </p>
                   <kpi.icon className={`h-4 w-4 ${kpi.accent}`} />
                 </div>
-                <div className="mt-2 text-2xl font-semibold">{kpi.value}</div>
+                <div className="mt-2 text-2xl font-semibold">{kpi.value ?? "–"}</div>
               </div>
             ))}
           </div>
@@ -269,28 +177,30 @@ const Dashboard = () => {
 
         <div className="grid gap-4">
           <Card className="hover:shadow-md transition-shadow">
-            <CardHeader>
-              <CardTitle>New Classes (last 5)</CardTitle>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle>Students</CardTitle>
+              <UserRound className="h-4 w-4 text-green-600" />
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-semibold">
-                {newestClasses.length}
+                {overview?.students ?? "–"}
               </div>
               <p className="text-sm text-muted-foreground">
-                Most recent classes added
+                Registered student accounts
               </p>
             </CardContent>
           </Card>
           <Card className="hover:shadow-md transition-shadow">
-            <CardHeader>
-              <CardTitle>New Teachers (last 5)</CardTitle>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle>Enrollments</CardTitle>
+              <ClipboardCheck className="h-4 w-4 text-sky-600" />
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-semibold">
-                {newestTeachers.length}
+                {overview?.enrollments ?? "–"}
               </div>
               <p className="text-sm text-muted-foreground">
-                Most recent teachers added
+                Student seats taken across all classes
               </p>
             </CardContent>
           </Card>
@@ -404,7 +314,7 @@ const Dashboard = () => {
             {newestTeachers.map((teacher, index) => (
               <Link
                 key={teacher.id}
-                to={`/users/show/${teacher.id}`}
+                to={`/faculty/show/${teacher.id}`}
                 className="flex items-center justify-between rounded-md border border-transparent px-3 py-2 transition-colors hover:border-primary/30 hover:bg-muted/40"
               >
                 <div className="flex items-center gap-3">
@@ -433,7 +343,7 @@ const Dashboard = () => {
           <CardContent className="space-y-3">
             {topDepartments.map((dept, index) => (
               <div
-                key={dept.departmentId}
+                key={dept.departmentName}
                 className="flex items-center justify-between rounded-md border border-transparent px-3 py-2 transition-colors hover:border-primary/30 hover:bg-muted/40"
               >
                 <div className="flex items-center gap-3">
@@ -443,7 +353,7 @@ const Dashboard = () => {
                   <div>
                     <p className="text-sm font-medium">{dept.departmentName}</p>
                     <p className="text-xs text-muted-foreground">
-                      {dept.totalSubjects} subjects
+                      {dept.totalSubjects} {dept.totalSubjects === 1 ? "subject" : "subjects"}
                     </p>
                   </div>
                 </div>
@@ -460,7 +370,7 @@ const Dashboard = () => {
           <CardContent className="space-y-3">
             {topSubjects.map((subject, index) => (
               <div
-                key={subject.subjectId}
+                key={subject.subjectName}
                 className="flex items-center justify-between rounded-md border border-transparent px-3 py-2 transition-colors hover:border-primary/30 hover:bg-muted/40"
               >
                 <div className="flex items-center gap-3">
@@ -470,7 +380,7 @@ const Dashboard = () => {
                   <div>
                     <p className="text-sm font-medium">{subject.subjectName}</p>
                     <p className="text-xs text-muted-foreground">
-                      {subject.totalClasses} classes
+                      {subject.totalClasses} {subject.totalClasses === 1 ? "class" : "classes"}
                     </p>
                   </div>
                 </div>
