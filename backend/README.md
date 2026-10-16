@@ -1,4 +1,4 @@
-# Classroom: Backend API
+# School Dashboard: Backend API
 
 Express 5 REST API with Drizzle ORM, Better Auth and Postgres (Neon). The [root README](../README.md) has the project overview, permissions, API reference and setup.
 

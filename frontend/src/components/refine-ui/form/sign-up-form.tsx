@@ -93,7 +93,7 @@ export const SignUpForm = () => {
   return (
     <div className="sign-up">
       <div className="logo">
-        <img src="/logo.png" alt="Logo" />
+        <img src="/logo.svg" alt="Logo" />
       </div>
 
       <Card className="card">

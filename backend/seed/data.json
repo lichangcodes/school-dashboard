@@ -3,7 +3,7 @@
     {
       "id": "admin_1",
       "name": "Ava Collins",
-      "email": "ava.admin@classroom.dev",
+      "email": "ava.admin@example.com",
       "role": "admin",
       "password": "Admin#1234",
       "image": "https://images.unsplash.com/photo-1502685104226-ee32379fefbe?auto=format&fit=crop&w=400&q=80"
@@ -11,7 +11,7 @@
     {
       "id": "teacher_1",
       "name": "Liam Patel",
-      "email": "liam.patel@classroom.dev",
+      "email": "liam.patel@example.com",
       "role": "teacher",
       "password": "Teach#1234",
       "image": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80"
@@ -19,7 +19,7 @@
     {
       "id": "teacher_2",
       "name": "Noah Kim",
-      "email": "noah.kim@classroom.dev",
+      "email": "noah.kim@example.com",
       "role": "teacher",
       "password": "Teach#5678",
       "image": "https://images.unsplash.com/photo-1544723795-3fb6469f5b39?auto=format&fit=crop&w=400&q=80"
@@ -27,7 +27,7 @@
     {
       "id": "teacher_3",
       "name": "Mia Lopez",
-      "email": "mia.lopez@classroom.dev",
+      "email": "mia.lopez@example.com",
       "role": "teacher",
       "password": "Teach#9012",
       "image": "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=400&q=80"
@@ -35,7 +35,7 @@
     {
       "id": "teacher_4",
       "name": "Ethan Brooks",
-      "email": "ethan.brooks@classroom.dev",
+      "email": "ethan.brooks@example.com",
       "role": "teacher",
       "password": "Teach#3456",
       "image": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80"
@@ -43,7 +43,7 @@
     {
       "id": "teacher_5",
       "name": "Priya Nair",
-      "email": "priya.nair@classroom.dev",
+      "email": "priya.nair@example.com",
       "role": "teacher",
       "password": "Teach#7890",
       "image": "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=400&q=80"
@@ -51,7 +51,7 @@
     {
       "id": "student_1",
       "name": "Arjun Singh",
-      "email": "arjun.singh@classroom.dev",
+      "email": "arjun.singh@example.com",
       "role": "student",
       "password": "Student#123",
       "image": "https://images.unsplash.com/photo-1545996124-0501ebae84d0?auto=format&fit=crop&w=400&q=80"
@@ -59,7 +59,7 @@
     {
       "id": "student_2",
       "name": "Emily Chen",
-      "email": "emily.chen@classroom.dev",
+      "email": "emily.chen@example.com",
       "role": "student",
       "password": "Student#234",
       "image": "https://images.unsplash.com/photo-1527980965255-d3b416303d12?auto=format&fit=crop&w=400&q=80"
@@ -67,7 +67,7 @@
     {
       "id": "student_3",
       "name": "Zoe Parker",
-      "email": "zoe.parker@classroom.dev",
+      "email": "zoe.parker@example.com",
       "role": "student",
       "password": "Student#345",
       "image": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=400&q=80"
@@ -75,7 +75,7 @@
     {
       "id": "student_4",
       "name": "Jacob Miller",
-      "email": "jacob.miller@classroom.dev",
+      "email": "jacob.miller@example.com",
       "role": "student",
       "password": "Student#456",
       "image": "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=400&q=80"
@@ -83,7 +83,7 @@
     {
       "id": "student_5",
       "name": "Sara James",
-      "email": "sara.james@classroom.dev",
+      "email": "sara.james@example.com",
       "role": "student",
       "password": "Student#567",
       "image": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=400&q=80"
@@ -91,7 +91,7 @@
     {
       "id": "student_6",
       "name": "Daniel Wright",
-      "email": "daniel.wright@classroom.dev",
+      "email": "daniel.wright@example.com",
       "role": "student",
       "password": "Student#678",
       "image": "https://images.unsplash.com/photo-1525134479668-1bee5c7c6845?auto=format&fit=crop&w=400&q=80"
@@ -99,7 +99,7 @@
     {
       "id": "student_7",
       "name": "Nina Alvarez",
-      "email": "nina.alvarez@classroom.dev",
+      "email": "nina.alvarez@example.com",
       "role": "student",
       "password": "Student#789",
       "image": "https://images.unsplash.com/photo-1544723795-3fb6469f5b39?auto=format&fit=crop&w=400&q=80"
@@ -107,7 +107,7 @@
     {
       "id": "student_8",
       "name": "Omar Farouk",
-      "email": "omar.farouk@classroom.dev",
+      "email": "omar.farouk@example.com",
       "role": "student",
       "password": "Student#890",
       "image": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80"
@@ -115,7 +115,7 @@
     {
       "id": "student_9",
       "name": "Grace Wilson",
-      "email": "grace.wilson@classroom.dev",
+      "email": "grace.wilson@example.com",
       "role": "student",
       "password": "Student#901",
       "image": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=400&q=80"
@@ -123,7 +123,7 @@
     {
       "id": "student_10",
       "name": "Leo Andersen",
-      "email": "leo.andersen@classroom.dev",
+      "email": "leo.andersen@example.com",
       "role": "student",
       "password": "Student#012",
       "image": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=400&q=80"
@@ -131,7 +131,7 @@
     {
       "id": "student_11",
       "name": "Hannah Ross",
-      "email": "hannah.ross@classroom.dev",
+      "email": "hannah.ross@example.com",
       "role": "student",
       "password": "Student#135",
       "image": "https://images.unsplash.com/photo-1527980965255-d3b416303d12?auto=format&fit=crop&w=400&q=80"
@@ -139,7 +139,7 @@
     {
       "id": "student_12",
       "name": "Ibrahim Yusuf",
-      "email": "ibrahim.yusuf@classroom.dev",
+      "email": "ibrahim.yusuf@example.com",
       "role": "student",
       "password": "Student#246",
       "image": "https://images.unsplash.com/photo-1545996124-0501ebae84d0?auto=format&fit=crop&w=400&q=80"
