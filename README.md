@@ -1,4 +1,4 @@
-# Classroom: University Management Dashboard
+# School Dashboard: University Management App
 
 [![CI](https://github.com/lichangcodes/school-dashboard/actions/workflows/ci.yml/badge.svg)](https://github.com/lichangcodes/school-dashboard/actions/workflows/ci.yml)
 

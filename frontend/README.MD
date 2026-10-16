@@ -1,4 +1,4 @@
-# Classroom: Frontend
+# School Dashboard: Frontend
 
 React 19 + Refine single-page app, built with Vite, Tailwind CSS and shadcn/ui. The [root README](../README.md) has the project overview and setup.
 

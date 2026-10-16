@@ -38,9 +38,9 @@ type SignInFormValues = z.infer<typeof signInSchema>;
 // Seeded accounts (backend/seed/data.json). The public demo database is
 // reset from the seed every night, so visitors can change anything.
 const DEMO_ACCOUNTS = [
-  { label: "Admin", email: "ava.admin@classroom.dev", password: "Admin#1234" },
-  { label: "Teacher", email: "liam.patel@classroom.dev", password: "Teach#1234" },
-  { label: "Student", email: "arjun.singh@classroom.dev", password: "Student#123" },
+  { label: "Admin", email: "ava.admin@example.com", password: "Admin#1234" },
+  { label: "Teacher", email: "liam.patel@example.com", password: "Teach#1234" },
+  { label: "Student", email: "arjun.singh@example.com", password: "Student#123" },
 ];
 
 export const SignInForm = () => {
@@ -67,7 +67,7 @@ export const SignInForm = () => {
   return (
     <div className="sign-in">
       <div className="logo">
-        <img src="/logo.png" alt="Logo" />
+        <img src="/logo.svg" alt="Logo" />
       </div>
 
       <Card className="card">
